@@ -22,8 +22,47 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".v2.activity.HomeActivity"
+            android:name=".v2.activity.HomeActivity2"
             android:label="@string/title_activity_home"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".v2.activity.ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:parentActivityName=".v2.activity.HomeActivity2"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
+        <activity
+            android:name=".v2.activity.ContactActivity"
+            android:label="@string/title_activity_contact"
+            android:parentActivityName=".v2.activity.HomeActivity2"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
+        <activity
+            android:name=".v2.activity.AboutActivity"
+            android:label="@string/title_activity_about"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".v2.activity.HelpActivity"
+            android:label="@string/title_activity_help"
+            android:parentActivityName=".v2.activity.HomeActivity2"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
+        <activity
+            android:name=".v2.activity.NotificationActivity2"
+            android:label="@string/title_activity_notification2"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".v2.activity.IssueDetailActivity2"
+            android:label="@string/title_activity_issue_detail2"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

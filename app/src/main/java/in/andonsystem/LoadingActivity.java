@@ -1,10 +1,8 @@
 package in.andonsystem;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,7 +11,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -26,12 +23,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import in.andonsystem.v2.activity.HomeActivity;
+import in.andonsystem.v2.activity.HomeActivity2;
 import in.andonsystem.v2.entity.Buyer;
-import in.andonsystem.v2.entity.DaoSession;
 import in.andonsystem.v2.entity.User;
-import in.andonsystem.v2.entity.UserDao;
 import in.andonsystem.v2.service.BuyerService;
+import in.andonsystem.v2.service.IssueService;
 import in.andonsystem.v2.service.UserService;
 import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.MiscUtil;
@@ -52,11 +48,12 @@ public class LoadingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_loading);
         Log.d(TAG,"onCreate()");
 
-        buyerService = new BuyerService((App)getApplication());
-        userService = new UserService((App)getApplication());
+        app = (App) getApplication();
+        buyerService = new BuyerService(app);
+        userService = new UserService(app);
         progress = (ProgressBar)findViewById(R.id.loading_progress);
         appPref = getSharedPreferences(Constants.APP_PREF,0);
-        app = (App) getApplication();
+
     }
 
     @Override
@@ -78,7 +75,8 @@ public class LoadingActivity extends AppCompatActivity {
                 init();
                 //set first launch to false
             }else {
-
+                //Delete older issue
+                new IssueService(app).deleteAllOlder();
                 //Set teams and problems in App
                 String problems = appPref.getString(Constants.APP_PROBLEMS,"");
                 app.setProblems(problems.split(";"));
@@ -171,10 +169,11 @@ public class LoadingActivity extends AppCompatActivity {
             public void onResponse(JSONArray response) {
                 Log.i(TAG, "problem Response :" + response.toString());
 
-                String[] problems = new String[response.length()];
+                String[] problems = new String[response.length()+1];
+                problems[0] = "Select Problem";
                 try {
                     for (int i = 0; i < response.length(); i++){
-                        problems[i] = response.getString(i);
+                        problems[i+1] = response.getString(i);
                     }
                     app.setProblems(problems);
                     StringBuilder builder = new StringBuilder();
@@ -207,10 +206,11 @@ public class LoadingActivity extends AppCompatActivity {
             public void onResponse(JSONArray response) {
                 Log.i(TAG, "teams Response :" + response.toString());
 
-                String[] teams = new String[response.length()];
+                String[] teams = new String[response.length()+1];
+                teams[0] = "Select Team";
                 try {
                     for (int i = 0; i < response.length(); i++){
-                        teams[i] = response.getString(i);
+                        teams[i+1] = response.getString(i);
                     }
                     app.setTeams(teams);
                     StringBuilder builder = new StringBuilder();
@@ -277,7 +277,7 @@ public class LoadingActivity extends AppCompatActivity {
     public void goToLoginAfterInit(){
         Log.i(TAG, "goToLoginAfterInit()");
         noOfRequest++;
-        if(noOfRequest == 3){
+        if(noOfRequest == 4){
             Log.i(TAG, "setting first launch to false");
             appPref.edit().putBoolean(Constants.FIRST_LAUNCH,false).commit();
             progress.setVisibility(View.GONE);
@@ -287,7 +287,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
 
     public void  goToLogin(){
-        Intent i = new Intent(this, HomeActivity.class);
+        Intent i = new Intent(this, HomeActivity2.class);
         startActivity(i);
     }
 
