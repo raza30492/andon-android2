@@ -1,9 +1,14 @@
 package in.andonsystem.v2.service;
 
+import android.util.Log;
+
+import org.greenrobot.greendao.query.QueryBuilder;
+
 import java.util.Date;
 import java.util.List;
 
 import in.andonsystem.App;
+import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.BuyerDao;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.IssueDao;
@@ -13,6 +18,9 @@ import in.andonsystem.v2.entity.IssueDao;
  */
 
 public class IssueService {
+
+    private final String TAG = IssueService.class.getSimpleName();
+
     private final IssueDao issueDao;
 
     public IssueService(App app){
@@ -33,7 +41,27 @@ public class IssueService {
     }
 
     public List<Issue> findAll(){
-        return issueDao.loadAll();
+        //return issueDao.queryDeep(" WHERE 1");
+//        List<Issue> list =  issueDao.loadAll();
+//        for (Issue i: list){
+//            Log.i(TAG, "Buyer: " + i.getBuyer().getName());
+//        }
+//        return list;
+        QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
+        queryBuilder.join(Buyer.class, BuyerDao.Properties.Id);
+        return queryBuilder.list();
+    }
+
+    public List<Issue> findAllByTeam(String team){
+        QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
+        queryBuilder.join(Buyer.class, BuyerDao.Properties.Id)
+                .where(BuyerDao.Properties.Team.eq(team));
+        //queryBuilder.
+        List<Issue> list =  queryBuilder.list();
+        for (Issue i: list){
+            Log.i(TAG, "Buyer: " + i.getBuyer().getName());
+        }
+        return list;
     }
 
 }

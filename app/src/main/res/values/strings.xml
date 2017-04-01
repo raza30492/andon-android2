@@ -16,7 +16,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="copyright">(c) Md Zahid Raza</string>
+    <string name="copyright">&#169; Md Zahid Raza</string>
     <string name="version1">ver 1.1.0</string>
     <string name="version2">1-1-0</string>
 

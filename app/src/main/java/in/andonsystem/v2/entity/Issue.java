@@ -13,7 +13,7 @@ import org.greenrobot.greendao.DaoException;
  */
 
 @Entity
-public class Issue {
+public class Issue implements Comparable<Issue>{
 
     @Id
     private Long id;
@@ -275,12 +275,27 @@ public class Issue {
         myDao.update(this);
     }
 
+    @Override
+    public int compareTo(Issue other) {
+        int flag1 = 0;
+        if(this.fixAt != null) flag1 = 2;
+        else if(this.ackAt != null) flag1 = 1;
+
+        int flag2 = 0;
+        if(other.fixAt != null) flag2 = 2;
+        else if(other.ackAt != null) flag2 = 1;
+
+        int result = flag1 - flag2;
+        if(result == 0){
+            result = (int)(this.getId() - other.getId());
+        }
+        return result;
+    }
+
     /** called by internal mechanisms, do not call yourself. */
     @Generated(hash = 884668014)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getIssueDao() : null;
     }
-
-
 }
