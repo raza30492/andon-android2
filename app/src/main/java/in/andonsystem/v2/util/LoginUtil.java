@@ -90,7 +90,7 @@ public class LoginUtil {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> params = new HashMap<>();
-                params.put("Authorization", "Basic " + Base64.encodeToString("client:secret".getBytes(),0));
+                params.put("Authorization", "Basic " + Base64.encodeToString("client-android:super-secret".getBytes(),0));
                 params.put("Accept", "application/json; charset=utf-8");
                 return params;
             }

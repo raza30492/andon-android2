@@ -78,6 +78,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
 
         /*//////////////// Populating team filter //////////////////////*/
         final String[] teams = app.getTeams();
+        teams[0] = "Select Team";
         ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
         teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         teamFilter.setAdapter(teamAdapter);

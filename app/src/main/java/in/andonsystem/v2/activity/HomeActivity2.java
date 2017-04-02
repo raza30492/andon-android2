@@ -81,7 +81,7 @@ public class HomeActivity2 extends AppCompatActivity
 
     private AdapterHome rvAdapter; //Recycler View Adapter
     private Boolean rvAdded;  //Whether recycler view is added to container
-    private String selectedTeam = "Select Team";
+    private String selectedTeam = "All Team";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,6 +165,7 @@ public class HomeActivity2 extends AppCompatActivity
         //////////////////////////////////////////////////////////////////////////////////////
         teamFilter = (Spinner) findViewById(R.id.home_team_filter);
         final String[] teams = app.getTeams();
+        teams[0] = "All Team";
         ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
         teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         teamFilter.setAdapter(teamAdapter);
@@ -211,7 +212,7 @@ public class HomeActivity2 extends AppCompatActivity
 
         TreeSet<Issue> issues = new TreeSet<>();
         List<Issue> list;
-        if(selectedTeam.contains("Select")){
+        if(selectedTeam.contains("All Team")){
             list = issueService.findAll();
         }else{
             list = issueService.findAllByTeam(selectedTeam);
