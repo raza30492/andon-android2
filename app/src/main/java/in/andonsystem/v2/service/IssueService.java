@@ -41,6 +41,7 @@ public class IssueService {
     }
 
     public List<Issue> findAll(){
+        Log.d(TAG, "findAll" );
         //return issueDao.queryDeep(" WHERE 1");
 //        List<Issue> list =  issueDao.loadAll();
 //        for (Issue i: list){
@@ -53,13 +54,15 @@ public class IssueService {
     }
 
     public List<Issue> findAllByTeam(String team){
+        Log.d(TAG, "findAllByTeam: team = " + team);
         QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
-        queryBuilder.join(Buyer.class, BuyerDao.Properties.Id)
+        queryBuilder.join(IssueDao.Properties.BuyerId,Buyer.class)
                 .where(BuyerDao.Properties.Team.eq(team));
         //queryBuilder.
         List<Issue> list =  queryBuilder.list();
         for (Issue i: list){
             Log.i(TAG, "Buyer: " + i.getBuyer().getName());
+            Log.i(TAG, "Team: " + i.getBuyer().getTeam());
         }
         return list;
     }

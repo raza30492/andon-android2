@@ -18,7 +18,9 @@ public class Issue implements Comparable<Issue>{
     @Id
     private Long id;
 
-    @ToOne
+    private Long buyerId;
+
+    @ToOne(joinProperty = "buyerId")
     private Buyer buyer;
 
     private String problem;
@@ -48,10 +50,11 @@ public class Issue implements Comparable<Issue>{
     @Generated(hash = 724440415)
     private transient IssueDao myDao;
 
-    @Generated(hash = 1767985888)
-    public Issue(Long id, String problem, String description, Date raisedAt,
-            Date ackAt, Date fixAt) {
+    @Generated(hash = 1096656758)
+    public Issue(Long id, Long buyerId, String problem, String description,
+            Date raisedAt, Date ackAt, Date fixAt) {
         this.id = id;
+        this.buyerId = buyerId;
         this.problem = problem;
         this.description = description;
         this.raisedAt = raisedAt;
@@ -69,6 +72,14 @@ public class Issue implements Comparable<Issue>{
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getBuyerId() {
+        return this.buyerId;
+    }
+
+    public void setBuyerId(Long buyerId) {
+        this.buyerId = buyerId;
     }
 
     public String getProblem() {
@@ -111,35 +122,35 @@ public class Issue implements Comparable<Issue>{
         this.fixAt = fixAt;
     }
 
-    @Generated(hash = 660281577)
-    private transient boolean buyer__refreshed;
+    @Generated(hash = 1856800855)
+    private transient Long buyer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 306222603)
+    @Generated(hash = 2133095854)
     public Buyer getBuyer() {
-        if (buyer != null || !buyer__refreshed) {
+        Long __key = this.buyerId;
+        if (buyer__resolvedKey == null || !buyer__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             BuyerDao targetDao = daoSession.getBuyerDao();
-            targetDao.refresh(buyer);
-            buyer__refreshed = true;
+            Buyer buyerNew = targetDao.load(__key);
+            synchronized (this) {
+                buyer = buyerNew;
+                buyer__resolvedKey = __key;
+            }
         }
         return buyer;
     }
 
-    /** To-one relationship, returned entity is not refreshed and may carry only the PK property. */
-    @Generated(hash = 313168657)
-    public Buyer peakBuyer() {
-        return buyer;
-    }
-
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 458266812)
+    @Generated(hash = 1404955818)
     public void setBuyer(Buyer buyer) {
         synchronized (this) {
             this.buyer = buyer;
-            buyer__refreshed = true;
+            buyerId = buyer == null ? null : buyer.getId();
+            buyer__resolvedKey = buyerId;
         }
     }
 
@@ -298,4 +309,5 @@ public class Issue implements Comparable<Issue>{
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getIssueDao() : null;
     }
+
 }

@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -12,6 +17,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".v2.authenticator.AuthenticatorActivity" />
+
+        <service android:name=".v2.authenticator.AuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
         <activity
             android:name=".LoadingActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -46,6 +63,7 @@
         <activity
             android:name=".v2.activity.AboutActivity"
             android:label="@string/title_activity_about"
+            android:parentActivityName=".v2.activity.HomeActivity2"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".v2.activity.HelpActivity"
@@ -59,11 +77,24 @@
         <activity
             android:name=".v2.activity.NotificationActivity2"
             android:label="@string/title_activity_notification2"
+            android:parentActivityName=".v2.activity.HomeActivity2"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".v2.activity.IssueDetailActivity2"
             android:label="@string/title_activity_issue_detail2"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:parentActivityName=".v2.activity.HomeActivity2"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".v2.activity.RaiseIssueActivity2"
+            android:label="@string/title_activity_raise_issue"
+            android:parentActivityName=".v2.activity.HomeActivity2"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
+        <activity android:name=".AuthActivity"
+            android:label="@string/title_activity_auth"></activity>
     </application>
 
 </manifest>

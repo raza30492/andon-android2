@@ -3,7 +3,6 @@ package in.andonsystem.v2.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
@@ -38,23 +37,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 
 import in.andonsystem.App;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterHome;
-import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
-import in.andonsystem.v2.service.BuyerService;
 import in.andonsystem.v2.service.IssueService;
-import in.andonsystem.v2.service.UserService;
 import in.andonsystem.v2.util.Constants;
 
 public class HomeActivity2 extends AppCompatActivity
@@ -89,14 +83,15 @@ public class HomeActivity2 extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setBackgroundColor(Color.parseColor("#0000FF"));
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //raiseIssue();
+                Intent i = new Intent(mContext, RaiseIssueActivity2.class);
+                startActivity(i);
             }
         });
-        fab.hide();
+ //       fab.hide();
 //        if(level == 0){
 //            fab.show();
 //        }
@@ -158,9 +153,9 @@ public class HomeActivity2 extends AppCompatActivity
         //////////////////////////////////////////////////////////////////////////////////////
         teamFilter = (Spinner) findViewById(R.id.home_team_filter);
         final String[] teams = app.getTeams();
-        ArrayAdapter<String> lineAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
-        lineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        teamFilter.setAdapter(lineAdapter);
+        ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
+        teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        teamFilter.setAdapter(teamAdapter);
 
         teamFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -305,8 +300,7 @@ public class HomeActivity2 extends AppCompatActivity
     private Issue getIssue(JSONObject i) {
         Issue mIssue = null;
         try {
-            mIssue = new Issue(i.getLong("id"), i.getString("problem"), i.getString("description"), new Date(i.getLong("raisedAt")), null, null);
-            mIssue.setBuyer(new Buyer(i.getLong("buyerId")));
+            mIssue = new Issue(i.getLong("id"),i.getLong("buyerId"), i.getString("problem"), i.getString("description"), new Date(i.getLong("raisedAt")), null, null);
             mIssue.setRaisedBy(new User(i.getLong("raisedBy")));
 
             if (! i.getString("ackBy").equals("null")) {
