@@ -33,7 +33,7 @@
         android:layout_marginBottom="16sp"></Spinner>
 
     <EditText
-        android:id="@+id/issue_desc"
+        android:id="@+id/ri_problem_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLength="70"

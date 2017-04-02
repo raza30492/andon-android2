@@ -22,6 +22,12 @@ public class UserService {
         return userDao.load(id);
     }
 
+    public User findByEmail(String email){
+        return userDao.queryBuilder()
+                .where(UserDao.Properties.Email.eq(email))
+                .unique();
+    }
+
     public void saveOrUpdate(List<User> users){
         userDao.insertOrReplaceInTx(users);
     }
