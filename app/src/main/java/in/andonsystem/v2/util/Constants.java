@@ -14,6 +14,8 @@ public class Constants {
     public static final String USER_PREF = "USER_PREF";
     public static final String USER_EMAIL = "USER_EMAIL";
     public static final String USER_ACCESS_TOKEN = "USER_ACCES_TOKEN";
+    public static final String IS_USER_LOGGED_IN = "IS_USER_LOGGED_IN";
+
 
     public static final String APP_PREF = "APP_PREF";
     public static final String FIRST_LAUNCH = "first.launch";

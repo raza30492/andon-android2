@@ -1,5 +1,10 @@
 package in.andonsystem.v2.util;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -28,6 +33,10 @@ public class LoginUtil {
     private static final String TAG = LoginUtil.class.getSimpleName();
 
     private static Boolean reqProgress;
+    private static Boolean invalidateProgress;
+    private static AccountManager mAccountManager;
+    private static String authToken;
+    private static SharedPreferences userPref;
 
     public static Bundle authenticate(String username, String password){
         Log.d(TAG,"authenticate()");
@@ -63,8 +72,9 @@ public class LoginUtil {
         Response.ErrorListener errorListener = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.i(TAG,error.toString());
                 NetworkResponse resp = error.networkResponse;
+                String data = new String(resp.data);
+                Log.i(TAG, "response status: " + data);
                 Log.i(TAG, "response status: " + resp.statusCode);
                 if(resp.statusCode == 400){
                     result.putString(AuthConstants.ARG_AUTHENTICATION_ERROR,"Incorrect credentials. Try again");
@@ -100,4 +110,56 @@ public class LoginUtil {
 
         return result;
     }
+
+//    public static String getNewToken(Context context){
+//        mAccountManager = AccountManager.get(context);
+//        userPref = context.getSharedPreferences(Constants.USER_PREF,0);
+//        invalidateProgress = true;
+//
+//        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+//        mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,accessToken);
+//
+//        Account[] accounts = mAccountManager.getAccounts();
+//        String email = userPref.getString(Constants.USER_EMAIL, null);
+//        Account account = null;
+//        if(email != null){
+//            for (Account a: accounts){
+//                if(a.name.equals(email)){
+//                    account = a;
+//                    break;
+//                }
+//            }
+//        }else{
+//            Log.i(TAG, "email not saved in userPref");
+//            return null;
+//        }
+//
+//        final AccountManagerFuture<Bundle> future2 = mAccountManager.getAuthToken(account, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, context, null, null);
+//
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    Bundle bnd = future2.getResult();
+//                    authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+//                    userPref.edit().putString(Constants.USER_ACCESS_TOKEN,authToken).commit();
+//                    invalidateProgress = false;
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    Log.e(TAG,e.getMessage());
+//                    //showMessage(e.getMessage());
+//                }
+//            }
+//        }).start();
+//
+//        while (invalidateProgress){
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return authToken;
+//    }
+
 }

@@ -1,5 +1,8 @@
 package in.andonsystem.v2.activity;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,6 +31,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -43,13 +47,17 @@ import java.util.List;
 import java.util.TreeSet;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
+import in.andonsystem.AuthActivity;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterHome;
+import in.andonsystem.v2.authenticator.AuthConstants;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.service.IssueService;
 import in.andonsystem.v2.util.Constants;
+import in.andonsystem.v2.util.MyJsonRequest;
 
 public class HomeActivity2 extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,6 +66,8 @@ public class HomeActivity2 extends AppCompatActivity
 
     private Context mContext;
     private App app;
+    private AccountManager mAccountManager;
+    private Account account;
 
     private RelativeLayout container;
     private SwipeRefreshLayout refreshLayout;
@@ -66,6 +76,7 @@ public class HomeActivity2 extends AppCompatActivity
     private Spinner teamFilter;
 
     private SharedPreferences syncPref;
+    private SharedPreferences userPref;
     private IssueService issueService;
 
     private AdapterHome rvAdapter; //Recycler View Adapter
@@ -77,6 +88,7 @@ public class HomeActivity2 extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home2);
         mContext = this;
+        AppClose.activity3 = this;
         app = (App) getApplication();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -181,7 +193,9 @@ public class HomeActivity2 extends AppCompatActivity
 
         container = (RelativeLayout) findViewById(R.id.content_home);
         syncPref = getSharedPreferences(Constants.SYNC_PREF, 0);
+        userPref = getSharedPreferences(Constants.USER_PREF, 0);
         issueService = new IssueService(app);
+        mAccountManager = AccountManager.get(this);
     }
 
     @Override
@@ -287,12 +301,26 @@ public class HomeActivity2 extends AppCompatActivity
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
-                Toast.makeText(mContext,"Unable to Sync. Check your Internet Connection.",Toast.LENGTH_SHORT).show();
+                NetworkResponse resp =  error.networkResponse;
+                String data = new String(resp.data);
+                Log.i(TAG, "response status: " + data);
+                if(resp.statusCode == 401){
+                    invalidateAccessToken();
+                }else{
+                    Toast.makeText(mContext,"Unable to Sync. Check your Internet Connection.",Toast.LENGTH_SHORT).show();
+                }
                 refreshLayout.setRefreshing(false);
             }
         };
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET,url,null,listener,errorListener);
+        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+        if(accessToken == null){
+            Intent i = new Intent(this, AuthActivity.class);
+            startActivity(i);
+            return;
+        }
+
+        MyJsonRequest request = new MyJsonRequest(Request.Method.GET,url,null,listener,errorListener,accessToken);
         request.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request);
     }
@@ -321,13 +349,50 @@ public class HomeActivity2 extends AppCompatActivity
         return mIssue;
     }
 
+    private void invalidateAccessToken(){
+        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+        mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,accessToken);
+
+        Account[] accounts = mAccountManager.getAccounts();
+        String email = userPref.getString(Constants.USER_EMAIL, null);
+        if(email != null){
+            for (Account a: accounts){
+                if(a.name.equals(email)){
+                    account = a;
+                    break;
+                }
+            }
+        }else{
+            Log.i(TAG, "email not saved in userPref");
+            return;
+        }
+
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Bundle bnd = future.getResult();
+                    String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+                    userPref.edit().putString(Constants.USER_ACCESS_TOKEN,authToken).commit();
+                    syncIssues();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG,e.getMessage());
+                    //showMessage(e.getMessage());
+                }
+            }
+        }).start();
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            AppClose.close();
         }
     }
 
@@ -373,12 +438,18 @@ public class HomeActivity2 extends AppCompatActivity
             Intent i = new Intent(this, HelpActivity.class);
             startActivity(i);
         } else if (id == R.id.nav_logout) {
-            //sharedPref.edit().putBoolean(Constants.LOGGED_IN,false).commit();
-            finish();
+            Intent i = new Intent(this, AuthActivity.class);
+            startActivity(i);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        Log.i(TAG,"finish()");
     }
 }

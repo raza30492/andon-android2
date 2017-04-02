@@ -97,7 +97,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
             Log.i(TAG, "refresh_token = " + refreshToken);
             if (refreshToken != null) {
                 try {
-                    Log.d("udinic", TAG + "> re-authenticating with the existing password");
+                    Log.d("udinic", TAG + "> re-authenticating with the existing refresh_token");
                     Bundle result = LoginUtil.authenticateWithRefreshToken(refreshToken);
                     authToken = result.getString(AuthConstants.ARG_ACCESS_TOKEN);
                 } catch (Exception e) {

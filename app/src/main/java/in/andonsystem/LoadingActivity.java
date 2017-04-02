@@ -49,6 +49,7 @@ public class LoadingActivity extends AppCompatActivity {
     private UserService userService;
     private ProgressBar progress;
     private SharedPreferences appPref;
+    private SharedPreferences userPref;
     private int noOfRequest = 0;
     private App app;
 
@@ -57,13 +58,14 @@ public class LoadingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
         Log.d(TAG, "onCreate()");
+        AppClose.activity1 = this;
 
         app = (App) getApplication();
         buyerService = new BuyerService(app);
         userService = new UserService(app);
         progress = (ProgressBar) findViewById(R.id.loading_progress);
         appPref = getSharedPreferences(Constants.APP_PREF, 0);
-
+        userPref = getSharedPreferences(Constants.USER_PREF, 0);
     }
 
     @Override
@@ -299,8 +301,12 @@ public class LoadingActivity extends AppCompatActivity {
     }
 
     public void goToLogin() {
-        //getTokenForAccountCreateIfNeeded();
-        Intent i = new Intent(this, AuthActivity.class);
+        Intent i;
+        if(userPref.getBoolean(Constants.IS_USER_LOGGED_IN, false)){
+            i = new Intent(this, HomeActivity2.class);
+        }else{
+            i = new Intent(this, AuthActivity.class);
+        }
         startActivity(i);
     }
 
@@ -325,73 +331,6 @@ public class LoadingActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    private void getTokenForAccountCreateIfNeeded() {
-        AccountManager mAccountManager = AccountManager.get(this);
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(AuthConstants.VALUE_ACCOUNT_TYPE, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null,
-                new AccountManagerCallback<Bundle>() {
-                    @Override
-                    public void run(AccountManagerFuture<Bundle> future) {
-                        Bundle bnd = null;
-                        try {
-                            bnd = future.getResult();
-                            final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                            showMessage(((authtoken != null) ? "SUCCESS!\ntoken: " + authtoken : "FAIL"));
-                            Log.d("udinic", "GetTokenForAccount Bundle is " + bnd);
-                            goToLogin();
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            showMessage(e.getMessage());
-                        }
-                    }
-                }
-                , null);
-    }
-
-    private void showMessage(final String msg) {
-        if (TextUtils.isEmpty(msg))
-            return;
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getBaseContext(), msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-//    private void getExistingAccountAuthToken() {
-//        AccountManager mAccountManager = AccountManager.get(this);
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-//            // TODO: Consider calling
-//            //    ActivityCompat#requestPermissions
-//            // here to request the missing permissions, and then overriding
-//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//            //                                          int[] grantResults)
-//            // to handle the case where the user grants the permission. See the documentation
-//            // for ActivityCompat#requestPermissions for more details.
-//            return;
-//        }
-//        Account[] availableAccounts = mAccountManager.getAccountsByType(AuthConstants.VALUE_ACCOUNT_TYPE);
-//
-//        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, authTokenType, null, this, null, null);
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    Bundle bnd = future.getResult();
-//
-//                    final String authtoken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-//                    showMessage((authtoken != null) ? "SUCCESS!\ntoken: " + authtoken : "FAIL");
-//                    Log.d("udinic", "GetToken Bundle is " + bnd);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    showMessage(e.getMessage());
-//                }
-//            }
-//        }).start();
-//    }
 
     @Override
     protected void onStop() {

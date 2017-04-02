@@ -47,6 +47,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         Log.i(TAG, "onCreate()");
+        AppClose.activity2 = this;
         mContext = this;
         mAccountManager = AccountManager.get(this);
         userPref = getSharedPreferences(Constants.USER_PREF,0);
@@ -128,41 +129,24 @@ public class AuthActivity extends AppCompatActivity {
         }
         Log.i(TAG, "selected = " + mSelected);
         Account account = accounts[mSelected];
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null);
 
-        new Thread(new Runnable() {
+        mAccountManager.removeAccount(account, new AccountManagerCallback<Boolean>() {
             @Override
-            public void run() {
+            public void run(AccountManagerFuture<Boolean> future) {
                 try {
-                    Bundle bnd = future.getResult();
-                    String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                    mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,authToken);
-                } catch (Exception e) {
+                    Boolean result = future.getResult();
+                    updateListView();
+                    Log.i(TAG, "Account removed =" + result);
+                } catch (OperationCanceledException e) {
                     e.printStackTrace();
-                    Log.e(TAG,e.getMessage());
-                    //showMessage(e.getMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (AuthenticatorException e) {
+                    e.printStackTrace();
                 }
-            }
-        }).start();
 
-        //mAccountManager.removeAccount(account,)
-//        mAccountManager.removeAccount(account, new AccountManagerCallback<Boolean>() {
-//            @Override
-//            public void run(AccountManagerFuture<Boolean> future) {
-//                try {
-//                    Boolean result = future.getResult();
-//                    updateListView();
-//                    Log.i(TAG, "Account removed =" + result);
-//                } catch (OperationCanceledException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                } catch (AuthenticatorException e) {
-//                    e.printStackTrace();
-//                }
-//
-//            }
-//        }, null);
+            }
+        }, null);
     }
 
     private void getTokenForAccountCreateIfNeeded() {
@@ -190,6 +174,7 @@ public class AuthActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = userPref.edit();
         editor.putString(Constants.USER_EMAIL,username);
         editor.putString(Constants.USER_ACCESS_TOKEN,authToken);
+        editor.putBoolean(Constants.IS_USER_LOGGED_IN, true);
         editor.commit();
         Intent i = new Intent(this, HomeActivity2.class);
         startActivity(i);
@@ -218,5 +203,11 @@ public class AuthActivity extends AppCompatActivity {
 
     private void showMessage(String msg){
         Toast.makeText(mContext,msg,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        Log.i(TAG,"finish()");
     }
 }
