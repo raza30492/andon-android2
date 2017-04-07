@@ -50,6 +50,8 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_notification2">Notification</string>
     <string name="title_activity_issue_detail2">Issue Detail</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="title_activity_home1">Andon System</string>
 
 
 </resources>

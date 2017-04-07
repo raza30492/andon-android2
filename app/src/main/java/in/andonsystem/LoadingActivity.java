@@ -1,23 +1,14 @@
 package in.andonsystem;
 
-import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.accounts.AccountManagerCallback;
-import android.accounts.AccountManagerFuture;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -32,8 +23,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import in.andonsystem.v2.activity.HomeActivity2;
-import in.andonsystem.v2.authenticator.AuthConstants;
+import in.andonsystem.v2.activity.HomeActivity;
 import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.service.BuyerService;
@@ -301,12 +291,7 @@ public class LoadingActivity extends AppCompatActivity {
     }
 
     public void goToLogin() {
-        Intent i;
-        if(userPref.getBoolean(Constants.IS_USER_LOGGED_IN, false)){
-            i = new Intent(this, HomeActivity2.class);
-        }else{
-            i = new Intent(this, AuthActivity.class);
-        }
+        Intent i  = new Intent(this, HomeActivity.class);
         startActivity(i);
     }
 

@@ -8,7 +8,7 @@ public class Constants {
     public static final String API_BASE_URL = "http://zahidraza.in/andon-system/api/v2";
 
     public static final String SYNC_PREF = "SYNC_PREF";
-    public static final String LAST_ISSUE_SYNC = "LAST_ISSUE_SYNC";
+    public static final String LAST_ISSUE2_SYNC = "LAST_ISSUE2_SYNC";
     public static final String LAST_USER_SYNC = "LAST_USER_SYNC";
 
     public static final String USER_PREF = "USER_PREF";
