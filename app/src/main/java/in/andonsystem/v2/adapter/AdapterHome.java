@@ -40,7 +40,7 @@ public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
             public void onClick(View v) {
                 String idStr = ((TextView)v.findViewById(R.id.issue_id)).getText().toString();
                 Intent i = new Intent(context, IssueDetailActivity2.class);
-                i.putExtra("issueId", Integer.parseInt(idStr));
+                i.putExtra("issueId", Long.parseLong(idStr));
                 context.startActivity(i);
             }
         });
@@ -70,6 +70,7 @@ public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
         holder.time.setText(df.format(issue.getRaisedAt()));
         holder.team.setText(issue.getBuyer().getTeam());
         holder.buyer.setText(issue.getBuyer().getName());
+        holder.issueId.setText(String.valueOf(issue.getId()));
     }
 
     @Override

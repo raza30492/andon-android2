@@ -329,17 +329,17 @@ public class HomeActivity2 extends AppCompatActivity
     private Issue getIssue(JSONObject i) {
         Issue mIssue = null;
         try {
-            mIssue = new Issue(i.getLong("id"),i.getLong("buyerId"), i.getString("problem"), i.getString("description"), new Date(i.getLong("raisedAt")), null, null);
-            mIssue.setRaisedBy(new User(i.getLong("raisedBy")));
+            mIssue = new Issue(i.getLong("id"),i.getLong("buyerId"), i.getString("problem"), i.getString("description"), new Date(i.getLong("raisedAt")), null, null, i.getInt("processingAt"));
+            mIssue.setRaisedBy(i.getLong("raisedBy"));
 
             if (! i.getString("ackBy").equals("null")) {
-                mIssue.setAckBy(new User(i.getLong("ackBy")));
+                mIssue.setAckBy(i.getLong("ackBy"));
             }
             if (! i.getString("ackAt").equals("null")) {
                 mIssue.setAckAt(new Date(i.getLong("ackAt")));
             }
             if (! i.getString("fixBy").equals("null")) {
-                mIssue.setFixBy(new User(i.getLong("fixBy")));
+                mIssue.setFixBy(i.getLong("fixBy"));
             }
             if (! i.getString("fixAt").equals("null")) {
                 mIssue.setFixAt(new Date(i.getLong("fixAt")));

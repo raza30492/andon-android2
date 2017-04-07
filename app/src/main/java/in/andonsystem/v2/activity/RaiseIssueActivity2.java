@@ -182,6 +182,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             }
         };
         String url = Constants.API_BASE_URL + "/issues";
+        Log.d(TAG, "Issue Raise url:" + url);
         MyJsonRequest request = new MyJsonRequest(Request.Method.POST,url,issue,listener,errorListener,userPref.getString(Constants.USER_ACCESS_TOKEN,null));
         request.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request);

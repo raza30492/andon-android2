@@ -27,20 +27,28 @@ public class Issue implements Comparable<Issue>{
 
     private String description;
 
-    @ToOne
-    private User raisedBy;
+    private Long raisedBy;
 
-    @ToOne
-    private User ackBy;
+    @ToOne(joinProperty = "raisedBy")
+    private User raisedByUser;
 
-    @ToOne
-    private User fixBy;
+    private Long ackBy;
+
+    @ToOne(joinProperty = "ackBy")
+    private User ackByUser;
+
+    private Long fixBy;
+
+    @ToOne(joinProperty = "fixBy")
+    private User fixByUser;
 
     private Date raisedAt;
 
     private Date ackAt;
 
     private Date fixAt;
+
+    private Integer processingAt;
 
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
@@ -50,9 +58,24 @@ public class Issue implements Comparable<Issue>{
     @Generated(hash = 724440415)
     private transient IssueDao myDao;
 
-    @Generated(hash = 1096656758)
-    public Issue(Long id, Long buyerId, String problem, String description,
-            Date raisedAt, Date ackAt, Date fixAt) {
+
+    @Generated(hash = 336750181)
+    public Issue(Long id, Long buyerId, String problem, String description, Long raisedBy, Long ackBy, Long fixBy,
+            Date raisedAt, Date ackAt, Date fixAt, Integer processingAt) {
+        this.id = id;
+        this.buyerId = buyerId;
+        this.problem = problem;
+        this.description = description;
+        this.raisedBy = raisedBy;
+        this.ackBy = ackBy;
+        this.fixBy = fixBy;
+        this.raisedAt = raisedAt;
+        this.ackAt = ackAt;
+        this.fixAt = fixAt;
+        this.processingAt = processingAt;
+    }
+
+    public Issue(Long id, Long buyerId, String problem, String description, Date raisedAt, Date ackAt, Date fixAt, Integer processingAt) {
         this.id = id;
         this.buyerId = buyerId;
         this.problem = problem;
@@ -60,70 +83,125 @@ public class Issue implements Comparable<Issue>{
         this.raisedAt = raisedAt;
         this.ackAt = ackAt;
         this.fixAt = fixAt;
+        this.processingAt = processingAt;
     }
 
     @Generated(hash = 596101413)
     public Issue() {
     }
 
+
+    @Generated(hash = 1856800855)
+    private transient Long buyer__resolvedKey;
+
+    @Generated(hash = 321767753)
+    private transient Long raisedByUser__resolvedKey;
+
+    @Generated(hash = 1045371704)
+    private transient Long ackByUser__resolvedKey;
+
+    @Generated(hash = 1617456049)
+    private transient Long fixByUser__resolvedKey;
+
     public Long getId() {
         return this.id;
     }
+
 
     public void setId(Long id) {
         this.id = id;
     }
 
+
     public Long getBuyerId() {
         return this.buyerId;
     }
+
 
     public void setBuyerId(Long buyerId) {
         this.buyerId = buyerId;
     }
 
+
     public String getProblem() {
         return this.problem;
     }
+
 
     public void setProblem(String problem) {
         this.problem = problem;
     }
 
+
     public String getDescription() {
         return this.description;
     }
+
 
     public void setDescription(String description) {
         this.description = description;
     }
 
+
+    public Long getRaisedBy() {
+        return this.raisedBy;
+    }
+
+
+    public void setRaisedBy(Long raisedBy) {
+        this.raisedBy = raisedBy;
+    }
+
+
+    public Long getAckBy() {
+        return this.ackBy;
+    }
+
+
+    public void setAckBy(Long ackBy) {
+        this.ackBy = ackBy;
+    }
+
+
+    public Long getFixBy() {
+        return this.fixBy;
+    }
+
+
+    public void setFixBy(Long fixBy) {
+        this.fixBy = fixBy;
+    }
+
+
     public Date getRaisedAt() {
         return this.raisedAt;
     }
+
 
     public void setRaisedAt(Date raisedAt) {
         this.raisedAt = raisedAt;
     }
 
+
     public Date getAckAt() {
         return this.ackAt;
     }
+
 
     public void setAckAt(Date ackAt) {
         this.ackAt = ackAt;
     }
 
+
     public Date getFixAt() {
         return this.fixAt;
     }
+
 
     public void setFixAt(Date fixAt) {
         this.fixAt = fixAt;
     }
 
-    @Generated(hash = 1856800855)
-    private transient Long buyer__resolvedKey;
 
     /** To-one relationship, resolved on first access. */
     @Generated(hash = 2133095854)
@@ -144,6 +222,7 @@ public class Issue implements Comparable<Issue>{
         return buyer;
     }
 
+
     /** called by internal mechanisms, do not call yourself. */
     @Generated(hash = 1404955818)
     public void setBuyer(Buyer buyer) {
@@ -154,101 +233,102 @@ public class Issue implements Comparable<Issue>{
         }
     }
 
-    @Generated(hash = 765375038)
-    private transient boolean raisedBy__refreshed;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 1036059164)
-    public User getRaisedBy() {
-        if (raisedBy != null || !raisedBy__refreshed) {
+    @Generated(hash = 1997197928)
+    public User getRaisedByUser() {
+        Long __key = this.raisedBy;
+        if (raisedByUser__resolvedKey == null
+                || !raisedByUser__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             UserDao targetDao = daoSession.getUserDao();
-            targetDao.refresh(raisedBy);
-            raisedBy__refreshed = true;
+            User raisedByUserNew = targetDao.load(__key);
+            synchronized (this) {
+                raisedByUser = raisedByUserNew;
+                raisedByUser__resolvedKey = __key;
+            }
         }
-        return raisedBy;
+        return raisedByUser;
     }
 
-    /** To-one relationship, returned entity is not refreshed and may carry only the PK property. */
-    @Generated(hash = 490536577)
-    public User peakRaisedBy() {
-        return raisedBy;
-    }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1177325456)
-    public void setRaisedBy(User raisedBy) {
+    @Generated(hash = 1092426669)
+    public void setRaisedByUser(User raisedByUser) {
         synchronized (this) {
-            this.raisedBy = raisedBy;
-            raisedBy__refreshed = true;
+            this.raisedByUser = raisedByUser;
+            raisedBy = raisedByUser == null ? null : raisedByUser.getId();
+            raisedByUser__resolvedKey = raisedBy;
         }
     }
 
-    @Generated(hash = 1170753193)
-    private transient boolean ackBy__refreshed;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 1831051859)
-    public User getAckBy() {
-        if (ackBy != null || !ackBy__refreshed) {
+    @Generated(hash = 1844316738)
+    public User getAckByUser() {
+        Long __key = this.ackBy;
+        if (ackByUser__resolvedKey == null
+                || !ackByUser__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             UserDao targetDao = daoSession.getUserDao();
-            targetDao.refresh(ackBy);
-            ackBy__refreshed = true;
+            User ackByUserNew = targetDao.load(__key);
+            synchronized (this) {
+                ackByUser = ackByUserNew;
+                ackByUser__resolvedKey = __key;
+            }
         }
-        return ackBy;
+        return ackByUser;
     }
 
-    /** To-one relationship, returned entity is not refreshed and may carry only the PK property. */
-    @Generated(hash = 1434835337)
-    public User peakAckBy() {
-        return ackBy;
-    }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 771730307)
-    public void setAckBy(User ackBy) {
+    @Generated(hash = 642713081)
+    public void setAckByUser(User ackByUser) {
         synchronized (this) {
-            this.ackBy = ackBy;
-            ackBy__refreshed = true;
+            this.ackByUser = ackByUser;
+            ackBy = ackByUser == null ? null : ackByUser.getId();
+            ackByUser__resolvedKey = ackBy;
         }
     }
 
-    @Generated(hash = 818812211)
-    private transient boolean fixBy__refreshed;
 
     /** To-one relationship, resolved on first access. */
-    @Generated(hash = 946316743)
-    public User getFixBy() {
-        if (fixBy != null || !fixBy__refreshed) {
+    @Generated(hash = 1372295253)
+    public User getFixByUser() {
+        Long __key = this.fixBy;
+        if (fixByUser__resolvedKey == null
+                || !fixByUser__resolvedKey.equals(__key)) {
+            final DaoSession daoSession = this.daoSession;
             if (daoSession == null) {
                 throw new DaoException("Entity is detached from DAO context");
             }
             UserDao targetDao = daoSession.getUserDao();
-            targetDao.refresh(fixBy);
-            fixBy__refreshed = true;
+            User fixByUserNew = targetDao.load(__key);
+            synchronized (this) {
+                fixByUser = fixByUserNew;
+                fixByUser__resolvedKey = __key;
+            }
         }
-        return fixBy;
+        return fixByUser;
     }
 
-    /** To-one relationship, returned entity is not refreshed and may carry only the PK property. */
-    @Generated(hash = 984639832)
-    public User peakFixBy() {
-        return fixBy;
-    }
 
     /** called by internal mechanisms, do not call yourself. */
-    @Generated(hash = 1672018782)
-    public void setFixBy(User fixBy) {
+    @Generated(hash = 657129114)
+    public void setFixByUser(User fixByUser) {
         synchronized (this) {
-            this.fixBy = fixBy;
-            fixBy__refreshed = true;
+            this.fixByUser = fixByUser;
+            fixBy = fixByUser == null ? null : fixByUser.getId();
+            fixByUser__resolvedKey = fixBy;
         }
     }
+
 
     /**
      * Convenient call for {@link org.greenrobot.greendao.AbstractDao#delete(Object)}.
@@ -262,6 +342,7 @@ public class Issue implements Comparable<Issue>{
         myDao.delete(this);
     }
 
+
     /**
      * Convenient call for {@link org.greenrobot.greendao.AbstractDao#refresh(Object)}.
      * Entity must attached to an entity context.
@@ -274,6 +355,7 @@ public class Issue implements Comparable<Issue>{
         myDao.refresh(this);
     }
 
+
     /**
      * Convenient call for {@link org.greenrobot.greendao.AbstractDao#update(Object)}.
      * Entity must attached to an entity context.
@@ -285,6 +367,7 @@ public class Issue implements Comparable<Issue>{
         }
         myDao.update(this);
     }
+
 
     @Override
     public int compareTo(Issue other) {
@@ -303,11 +386,18 @@ public class Issue implements Comparable<Issue>{
         return result;
     }
 
+    public Integer getProcessingAt() {
+        return this.processingAt;
+    }
+
+    public void setProcessingAt(Integer processingAt) {
+        this.processingAt = processingAt;
+    }
+
     /** called by internal mechanisms, do not call yourself. */
     @Generated(hash = 884668014)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getIssueDao() : null;
     }
-
 }

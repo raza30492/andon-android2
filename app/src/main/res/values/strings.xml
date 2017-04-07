@@ -48,8 +48,8 @@
     <string name="title_activity_test2">Test2Activity</string>
 
     <string name="action_settings">Settings</string>
-    <string name="title_activity_notification2">NotificationActivity2</string>
-    <string name="title_activity_issue_detail2">IssueDetailActivity2</string>
+    <string name="title_activity_notification2">Notification</string>
+    <string name="title_activity_issue_detail2">Issue Detail</string>
 
 
 </resources>

@@ -78,12 +78,20 @@
             android:name=".v2.activity.NotificationActivity2"
             android:label="@string/title_activity_notification2"
             android:parentActivityName=".v2.activity.HomeActivity2"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
         <activity
             android:name=".v2.activity.IssueDetailActivity2"
             android:label="@string/title_activity_issue_detail2"
             android:parentActivityName=".v2.activity.HomeActivity2"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.activity.HomeActivity2" />
+        </activity>
         <activity
             android:name=".v2.activity.RaiseIssueActivity2"
             android:label="@string/title_activity_raise_issue"
