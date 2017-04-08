@@ -4,6 +4,7 @@ import android.util.Log;
 
 import org.greenrobot.greendao.query.QueryBuilder;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.BuyerDao;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.IssueDao;
+import in.andonsystem.v2.entity.User;
 
 /**
  * Created by razamd on 3/31/2017.
@@ -48,12 +50,22 @@ public class IssueService {
         queryBuilder.join(IssueDao.Properties.BuyerId,Buyer.class)
                 .where(BuyerDao.Properties.Team.eq(team));
         //queryBuilder.
-        List<Issue> list =  queryBuilder.list();
-        for (Issue i: list){
-            Log.i(TAG, "Buyer: " + i.getBuyer().getName());
-            Log.i(TAG, "Team: " + i.getBuyer().getTeam());
+        return   queryBuilder.list();
+    }
+
+    public List<Issue> findAllByBuyers(List<Buyer> buyers){
+        Log.d(TAG, "findAllByBuyers");
+        List<Issue> result = new ArrayList<>();
+        QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
+        for(Buyer b: buyers){
+            result.addAll(issueDao.queryBuilder().where(IssueDao.Properties.BuyerId.eq(b.getId())).list());
         }
-        return list;
+        return result;
+    }
+
+    public List<Issue> findAllByUser(User user){
+        Log.d(TAG, "findAllByUser: user = " + user.getName());
+        return issueDao.queryBuilder().where(IssueDao.Properties.RaisedBy.eq(user.getId())).list();
     }
 
     public void deleteAllOlder(){

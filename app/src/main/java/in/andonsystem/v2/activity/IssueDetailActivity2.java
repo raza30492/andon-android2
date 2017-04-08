@@ -89,9 +89,6 @@ public class IssueDetailActivity2 extends AppCompatActivity {
         userPref = getSharedPreferences(Constants.USER_PREF, 0);
         user = userService.findByEmail(userPref.getString(Constants.USER_EMAIL, null));
 
-        Intent i = getIntent();
-        issueId = i.getLongExtra("issueId",0L);
-
         problem = (TextView)findViewById(R.id.detail_problem);
         team = (TextView)findViewById(R.id.detail_team);
         buyer = (TextView)findViewById(R.id.detail_buyer);
@@ -128,6 +125,9 @@ public class IssueDetailActivity2 extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        issueId = getIntent().getLongExtra("issueId",0L);
+        Log.d(TAG, "issueId = " + issueId);
+
         DateFormat df = new SimpleDateFormat("hh:mm aa");
         df.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
 
@@ -146,29 +146,19 @@ public class IssueDetailActivity2 extends AppCompatActivity {
         desc.setText(issue.getDescription());
 
         /*////////// Adding ack or fix button ///////////////*/
-        //check user department
         if (user.getUserType().equalsIgnoreCase(Constants.USER_SAMPLING)){
-            //If not fixed yet
             if (issue.getFixAt() == null && issue.getRaisedBy() == user.getId()){
-
                 layout.addView(fixButton);
             }
         }else if (user.getUserType().equalsIgnoreCase(Constants.USER_MERCHANDISING)){
-            //If issue is not acknowledged yet
             if(issue.getAckAt() == null){
-                //Check if user is concerned to the issue
                 if(user.getBuyers().contains(issue.getBuyer())){
-                    Long timeRaised = issue.getRaisedAt().getTime();
-                    Long timeNow = System.currentTimeMillis();
-                    Long interval = (long)1000*60*Constants.ACK_TIME;
-
-                    //User level1 or level2 both can acknowledge
-                    if( timeNow > (timeRaised + interval)){
+                    if( issue.getProcessingAt() > 1){
                         if(user.getLevel().contains(Constants.USER_LEVEL1) || user.getLevel().contains(Constants.USER_LEVEL2)){
                             layout.addView(ackButton);
                         }
                     }
-                    else { //Only level 1 can acknowledge
+                    else {
                         if(user.getLevel().contains(Constants.USER_LEVEL1)){
                             layout.addView(ackButton);
                         }
@@ -176,6 +166,13 @@ public class IssueDetailActivity2 extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        layout.removeView(ackButton);
+        layout.addView(fixButton);
     }
 
     private void acknowledge(){

@@ -596,7 +596,7 @@ public class HomeActivity extends AppCompatActivity {
         if(accountList.size() == 0){
             accountSelected = 0;
             User user = userService.findByEmail(name);
-            userPref.edit().putString(Constants.USER_EMAIL, user.getEmail()).commit();
+            Log.d(TAG, "is user null = " + (user == null));
             chooseScreen(user.getUserType());
             onAccountChange();
         }

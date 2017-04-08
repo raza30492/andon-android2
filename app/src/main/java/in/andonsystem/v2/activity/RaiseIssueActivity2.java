@@ -45,7 +45,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
 
     private final String TAG = RaiseIssueActivity2.class.getSimpleName();
 
-    private Context mContect;
+    private Context mContext;
     private AccountManager mAccountManager;
     private App app;
 
@@ -69,7 +69,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mContect = this;
+        mContext = this;
         app = (App) getApplication();
         mAccountManager = AccountManager.get(this);
         userPref = getSharedPreferences(Constants.USER_PREF, 0);

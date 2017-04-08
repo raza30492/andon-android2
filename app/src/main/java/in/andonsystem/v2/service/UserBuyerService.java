@@ -25,4 +25,9 @@ public class UserBuyerService {
     public void saveBatch(List<UserBuyer> list){
         userBuyerDao.insertInTx(list);
     }
+
+    public void deleteByUser(Long userId){
+        List<UserBuyer> list = userBuyerDao.queryBuilder().where(UserBuyerDao.Properties.UserId.eq(userId)).list();
+        userBuyerDao.deleteInTx(list);
+    }
 }

@@ -1,5 +1,7 @@
 package in.andonsystem.v2.service;
 
+import android.util.Log;
+
 import java.util.List;
 
 import in.andonsystem.App;
@@ -11,6 +13,8 @@ import in.andonsystem.v2.entity.UserDao;
  */
 
 public class UserService {
+
+    private final String TAG = UserService.class.getSimpleName();
 
     private final UserDao userDao;
 
@@ -28,11 +32,20 @@ public class UserService {
                 .unique();
     }
 
-    public void saveOrUpdate(List<User> users){
+    public void saveOrUpdateBatch(List<User> users){
         userDao.insertOrReplaceInTx(users);
+    }
+
+    public void saveOrUpdate(User user){
+        //Log.d(TAG,"saveOrUpdate: userId = " + user.getId());
+        userDao.insertOrReplace(user);
     }
 
     public void deleteAll(){
         userDao.deleteAll();
+    }
+
+    public boolean exists(Long id){
+        return (userDao.load(id) != null) ? true : false;
     }
 }

@@ -37,14 +37,17 @@ import in.andonsystem.v2.util.MiscUtil;
 public class LoadingActivity extends AppCompatActivity {
     private final String TAG = LoadingActivity.class.getSimpleName();
 
+    private App app;
     private BuyerService buyerService;
     private UserService userService;
     private UserBuyerService userBuyerService;
     private ProgressBar progress;
     private SharedPreferences appPref;
     private SharedPreferences userPref;
+    private SharedPreferences syncPref;
     private int noOfRequest = 0;
-    private App app;
+    private boolean firstLaunch = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +63,7 @@ public class LoadingActivity extends AppCompatActivity {
         progress = (ProgressBar) findViewById(R.id.loading_progress);
         appPref = getSharedPreferences(Constants.APP_PREF, 0);
         userPref = getSharedPreferences(Constants.USER_PREF, 0);
+        syncPref = getSharedPreferences(Constants.SYNC_PREF, 0);
     }
 
     @Override
@@ -75,11 +79,10 @@ public class LoadingActivity extends AppCompatActivity {
         } else {
             progress.setVisibility(View.VISIBLE);
 
-            Boolean firstLaunch = appPref.getBoolean(Constants.FIRST_LAUNCH, true);
+            firstLaunch = appPref.getBoolean(Constants.FIRST_LAUNCH, true);
             Log.i(TAG, "first launch: " + firstLaunch);
             if (firstLaunch) {
                 init();
-                //set first launch to false
             } else {
                 //Delete older issue
                 new IssueService(app).deleteAllOlder();
@@ -101,19 +104,17 @@ public class LoadingActivity extends AppCompatActivity {
                                 Log.d(TAG, "Update application");
                                 progress.setVisibility(View.GONE);
                             }
-                            if (response.getBoolean("initialize")) {
+                            else if (response.getBoolean("initialize")) {
+                                firstLaunch = true;
                                 init();
                             }
-                            if (response.has("version")) {
+                            else if (response.has("version")) {
                                 String version = response.getString("version");
                                 appPref.edit().putString(Constants.APP_VERSION, version).commit();
-                                progress.setVisibility(View.GONE);
+                                syncUsers();
+                                goToHomeAfterInit();
                             }
-                            //logic for transition to login
-                            if (!response.getBoolean("initialize") && (!response.has("update") || !response.getBoolean("update"))) {
-                                goToLogin();
-                                //getTokenForAccountCreateIfNeeded();
-                            }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -157,7 +158,8 @@ public class LoadingActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                goToLoginAfterInit();
+                goToHomeAfterInit();
+                syncUsers();
             }
         };
         Response.ErrorListener errorListener1 = new Response.ErrorListener() {
@@ -194,13 +196,13 @@ public class LoadingActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                goToLoginAfterInit();
+                goToHomeAfterInit();
             }
         };
         Response.ErrorListener errorListener2 = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
+                Log.e(TAG, error.getStackTrace().toString());
             }
         };
         JsonArrayRequest request2 = new JsonArrayRequest(Request.Method.GET, url2, null, listener2, errorListener2);
@@ -230,7 +232,7 @@ public class LoadingActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                goToLoginAfterInit();
+                goToHomeAfterInit();
             }
         };
         Response.ErrorListener errorListener3 = new Response.ErrorListener() {
@@ -242,70 +244,24 @@ public class LoadingActivity extends AppCompatActivity {
         JsonArrayRequest request3 = new JsonArrayRequest(Request.Method.GET, url3, null, listener3, errorListener3);
         request3.setTag(TAG);
         appController.addToRequestQueue(request3);
-
-        /////////////////////////// get Users ////////////////////////
-        String url4 = Constants.API_BASE_URL + "/users";
-        Response.Listener<JSONArray> listener4 = new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                Log.i(TAG, "users Response :" + response.toString());
-                try {
-                    List<User> users = new ArrayList<>();
-                    JSONObject u, b;
-                    JSONArray buyers;
-                    List<UserBuyer> userBuyerList;
-                    for (int i = 0; i < response.length(); i++) {
-                        u = response.getJSONObject(i);
-                        users.add(new User(u.getLong("id"),
-                                u.getString("name"),
-                                u.getString("email"),
-                                u.getString("mobile"),
-                                u.getString("role"),
-                                u.getString("userType"),
-                                u.getString("level")
-                        ));
-                        buyers = u.getJSONArray("buyers");
-                        if (buyers.length() > 0) {
-                            userBuyerList = new ArrayList<>();
-                            for (int j = 0; j < buyers.length(); j++){
-                                b = buyers.getJSONObject(j);
-                                userBuyerList.add(new UserBuyer(null,u.getLong("id"), b.getLong("id")));
-                            }
-                            userBuyerService.saveBatch(userBuyerList);
-                        }
-                    }
-
-                    userService.saveOrUpdate(users);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                goToLoginAfterInit();
-            }
-        };
-        Response.ErrorListener errorListener4 = new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
-            }
-        };
-        JsonArrayRequest request4 = new JsonArrayRequest(Request.Method.GET, url4, null, listener4, errorListener4);
-        request4.setTag(TAG);
-        appController.addToRequestQueue(request4);
     }
 
-    public void goToLoginAfterInit() {
-        Log.i(TAG, "goToLoginAfterInit()");
+    public void goToHomeAfterInit() {
+        Log.i(TAG, "goToHomeAfterInit()");
         noOfRequest++;
-        if (noOfRequest == 4) {
+        if (firstLaunch && noOfRequest == 4) {
             Log.i(TAG, "setting first launch to false");
             appPref.edit().putBoolean(Constants.FIRST_LAUNCH, false).commit();
             progress.setVisibility(View.GONE);
-
-            goToLogin();
+            goToHome();
+        }
+        if (!firstLaunch && noOfRequest == 2){
+            progress.setVisibility(View.GONE);
+            goToHome();
         }
     }
 
-    public void goToLogin() {
+    public void goToHome() {
         Intent i  = new Intent(this, HomeActivity.class);
         startActivity(i);
     }
@@ -331,7 +287,6 @@ public class LoadingActivity extends AppCompatActivity {
         return builder.create();
     }
 
-
     @Override
     protected void onStop() {
         super.onStop();
@@ -346,6 +301,64 @@ public class LoadingActivity extends AppCompatActivity {
     public void finish() {
         super.finish();
         Log.i(TAG,"finish()");
+    }
+
+    private void syncUsers(){
+        Log.d(TAG,"syncUsers()");
+        Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
+        String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
+        Response.Listener<JSONArray> listener4 = new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                Log.i(TAG, "users Response :" + response.toString());
+                try {
+                    List<User> users = new ArrayList<>();
+                    Long userId;
+                    JSONObject u, b;
+                    JSONArray buyers;
+                    List<UserBuyer> userBuyerList;
+                    for (int i = 0; i < response.length(); i++) {
+
+                        u = response.getJSONObject(i);
+                        userId = u.getLong("id");
+                        if (userService.exists(userId)) {
+                            userBuyerService.deleteByUser(userId);
+                        }
+                        userService.saveOrUpdate(new User(
+                                userId,
+                                u.getString("name"),
+                                u.getString("email"),
+                                u.getString("mobile"),
+                                u.getString("role"),
+                                u.getString("userType"),
+                                u.getString("level")
+                        ));
+                        buyers = u.getJSONArray("buyers");
+                        if (buyers.length() > 0) {
+                            userBuyerList = new ArrayList<>();
+                            for (int j = 0; j < buyers.length(); j++){
+                                b = buyers.getJSONObject(j);
+                                userBuyerList.add(new UserBuyer(null,u.getLong("id"), b.getLong("id")));
+                            }
+                            userBuyerService.saveBatch(userBuyerList);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                syncPref.edit().putLong(Constants.LAST_USER_SYNC, System.currentTimeMillis()).commit();
+                goToHomeAfterInit();
+            }
+        };
+        Response.ErrorListener errorListener4 = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage());
+            }
+        };
+        JsonArrayRequest request4 = new JsonArrayRequest(Request.Method.GET, url4, null, listener4, errorListener4);
+        request4.setTag(TAG);
+        AppController.getInstance().addToRequestQueue(request4);
     }
 
 }
