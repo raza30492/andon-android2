@@ -26,8 +26,10 @@ import java.util.List;
 import in.andonsystem.v2.activity.HomeActivity;
 import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.User;
+import in.andonsystem.v2.entity.UserBuyer;
 import in.andonsystem.v2.service.BuyerService;
 import in.andonsystem.v2.service.IssueService;
+import in.andonsystem.v2.service.UserBuyerService;
 import in.andonsystem.v2.service.UserService;
 import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.MiscUtil;
@@ -37,6 +39,7 @@ public class LoadingActivity extends AppCompatActivity {
 
     private BuyerService buyerService;
     private UserService userService;
+    private UserBuyerService userBuyerService;
     private ProgressBar progress;
     private SharedPreferences appPref;
     private SharedPreferences userPref;
@@ -53,6 +56,7 @@ public class LoadingActivity extends AppCompatActivity {
         app = (App) getApplication();
         buyerService = new BuyerService(app);
         userService = new UserService(app);
+        userBuyerService = new UserBuyerService(app);
         progress = (ProgressBar) findViewById(R.id.loading_progress);
         appPref = getSharedPreferences(Constants.APP_PREF, 0);
         userPref = getSharedPreferences(Constants.USER_PREF, 0);
@@ -247,7 +251,9 @@ public class LoadingActivity extends AppCompatActivity {
                 Log.i(TAG, "users Response :" + response.toString());
                 try {
                     List<User> users = new ArrayList<>();
-                    JSONObject u;
+                    JSONObject u, b;
+                    JSONArray buyers;
+                    List<UserBuyer> userBuyerList;
                     for (int i = 0; i < response.length(); i++) {
                         u = response.getJSONObject(i);
                         users.add(new User(u.getLong("id"),
@@ -258,6 +264,15 @@ public class LoadingActivity extends AppCompatActivity {
                                 u.getString("userType"),
                                 u.getString("level")
                         ));
+                        buyers = u.getJSONArray("buyers");
+                        if (buyers.length() > 0) {
+                            userBuyerList = new ArrayList<>();
+                            for (int j = 0; j < buyers.length(); j++){
+                                b = buyers.getJSONObject(j);
+                                userBuyerList.add(new UserBuyer(null,u.getLong("id"), b.getLong("id")));
+                            }
+                            userBuyerService.saveBatch(userBuyerList);
+                        }
                     }
 
                     userService.saveOrUpdate(users);

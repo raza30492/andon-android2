@@ -29,10 +29,6 @@ public class Buyer {
     public Buyer() {
     }
 
-    public Buyer(Long id) {
-        this.id = id;
-    }
-
     public Long getId() {
         return this.id;
     }
@@ -55,5 +51,21 @@ public class Buyer {
 
     public void setTeam(String team) {
         this.team = team;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Buyer)) return false;
+
+        Buyer buyer = (Buyer) o;
+
+        return getId().equals(buyer.getId());
+
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 }

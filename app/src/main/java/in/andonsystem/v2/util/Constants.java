@@ -23,4 +23,15 @@ public class Constants {
     public static final String APP_PROBLEMS = "app.problems";
     public static final String APP_TEAMS = "app.teams";
 
+    public static final int ACK_TIME = 5;  //30 minutes
+    public static final int FIX_L1_TIME = 180; //3 hours
+    public static final int FIX_L2_TIME = 120; //2 hours additional
+
+    public static final String USER_FACTORY = "FACTORY";
+    public static final String USER_SAMPLING = "SAMPLING";
+    public static final String USER_MERCHANDISING = "MERCHANDISING";
+
+    public static final String USER_LEVEL1 = "LEVEL1";
+    public static final String USER_LEVEL2 = "LEVEL2";
+
 }

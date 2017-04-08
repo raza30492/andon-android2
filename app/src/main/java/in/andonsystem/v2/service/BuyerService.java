@@ -1,9 +1,6 @@
 package in.andonsystem.v2.service;
 
-import android.app.Application;
 import android.util.Log;
-
-import org.greenrobot.greendao.database.Database;
 
 import java.util.List;
 

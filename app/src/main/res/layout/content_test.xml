@@ -13,4 +13,9 @@
     tools:context="in.andonsystem.v2.activity.TestActivity"
     tools:showIn="@layout/activity_test">
 
+    <Spinner
+        android:id="@+id/home_team_filter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></Spinner>
+
 </RelativeLayout>

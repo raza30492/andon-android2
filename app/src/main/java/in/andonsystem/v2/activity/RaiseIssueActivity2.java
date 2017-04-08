@@ -1,10 +1,11 @@
 package in.andonsystem.v2.activity;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerFuture;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -45,6 +46,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
     private final String TAG = RaiseIssueActivity2.class.getSimpleName();
 
     private Context mContect;
+    private AccountManager mAccountManager;
     private App app;
 
     private SharedPreferences userPref;
@@ -56,6 +58,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
     private EditText description;
 
     private String selectedTeam = "Select Team";
+    private JSONObject issue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +71,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
 
         mContect = this;
         app = (App) getApplication();
+        mAccountManager = AccountManager.get(this);
         userPref = getSharedPreferences(Constants.USER_PREF, 0);
         userService = new UserService(app);
 
@@ -133,11 +137,6 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         String problem = problemFilter.getSelectedItem().toString();
         String desc = description.getText().toString();
 
-//        Log.i(TAG, "team = " + team);
-//        Log.i(TAG, "buyerId = " + buyer);
-//        Log.i(TAG, "problem = " + problem);
-//        Log.i(TAG, "desc = " + desc);
-
         Long buyerId = Long.parseLong(buyer);
 
         if(buyerId == 0L){
@@ -150,9 +149,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             showMessage("Enter problem description.");
             return;
         }
-
-        JSONObject issue = new JSONObject();
-
+        issue = new JSONObject();
         try {
             issue.put("buyerId",buyerId);
             issue.put("problem",problem);
@@ -161,6 +158,11 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        raiseIssue();
+    }
+
+    private void raiseIssue(){
+
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -172,25 +174,70 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 NetworkResponse resp = error.networkResponse;
-                String data = new String(resp.data);
+                String data = new String(resp.data != null ? resp.data : "empty body".getBytes());
                 Log.d(TAG,data);
                 if (resp.statusCode == 400){
                     showMessage("Some error occured. inform developer.");
-                }else{
+                }
+                else if (resp.statusCode == 401){
+                    invalidateAccessToken();
+                    getAuthToken();
+                }
+                else{
                     showMessage("check your internet connection");
                 }
             }
         };
         String url = Constants.API_BASE_URL + "/issues";
         Log.d(TAG, "Issue Raise url:" + url);
-        MyJsonRequest request = new MyJsonRequest(Request.Method.POST,url,issue,listener,errorListener,userPref.getString(Constants.USER_ACCESS_TOKEN,null));
+        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+        if(accessToken == null){
+            getAuthToken();
+            return;
+        }
+        MyJsonRequest request = new MyJsonRequest(Request.Method.POST,url,issue,listener,errorListener,accessToken);
         request.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request);
-
     }
 
     private void showMessage(String msg){
         Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+    }
+
+    private void invalidateAccessToken(){
+        Log.d(TAG,"invalidateAccessToken");
+        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+        mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,accessToken);
+    }
+
+    private void getAuthToken(){
+        Log.d(TAG,"getAuthToken");
+        Account[] accounts = mAccountManager.getAccounts();
+        String email = userPref.getString(Constants.USER_EMAIL, null);
+        Account account = null;
+        for (Account a: accounts){
+            if(a.name.equals(email)){
+                account = a;
+                break;
+            }
+        }
+
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthToken(account, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Bundle bnd = future.getResult();
+                    String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+                    userPref.edit().putString(Constants.USER_ACCESS_TOKEN,authToken).commit();
+                    raiseIssue();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG,e.getMessage());
+                }
+            }
+        }).start();
     }
 
 }

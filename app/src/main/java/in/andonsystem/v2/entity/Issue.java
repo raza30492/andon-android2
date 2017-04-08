@@ -368,7 +368,13 @@ public class Issue implements Comparable<Issue>{
         myDao.update(this);
     }
 
-
+    /**
+     * flag = 0, raised state
+     * flag = 1, acknowledged state
+     * flag = 2, fixed state
+     * @param other
+     * @return
+     */
     @Override
     public int compareTo(Issue other) {
         int flag1 = 0;

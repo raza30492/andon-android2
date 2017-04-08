@@ -69,9 +69,6 @@ import in.andonsystem.v2.util.MyJsonRequest;
 public class HomeActivity extends AppCompatActivity {
     
     private final String TAG = HomeActivity.class.getSimpleName();
-    private final String USER_FACTORY = "FACTORY";
-    private final String USER_SAMPLING = "SAMPLING";
-    private final String USER_MERCHANDISING = "MERCHANDISING";
     private final long ACCOUNT_ADD = 10L;
     private final long ACCOUNT_MANAGE = 11L;
 
@@ -140,19 +137,22 @@ public class HomeActivity extends AppCompatActivity {
             chooseScreen(user.getUserType());
             onAccountChange();
             ProfileDrawerItem profile;
-            for(int i = 0; i < accounts.length; i++){
-                Account a = accounts[i];
-                accountList.add(a.name);
-                profile = new ProfileDrawerItem().withEmail(a.name).withName(a.name).withIcon(getResources().getDrawable(R.drawable.profile1)).withIdentifier(i);
-                if(email == null && i == 0){
-                    profile.withSetSelected(true);
-                    accountSelected = 0;
-                }else {
-                    if(a.name.equals(email)){
-                        profile.withSetSelected(true);
-                        accountSelected = i;
-                    }
+            accountSelected = 0;
+            for(Account a: accounts){
+                if(email.equals(a.name)){
+                    accountList.add(a.name);
+                    break;
                 }
+            }
+            for(Account a: accounts){
+                if(!email.equals(a.name)){
+                    accountList.add(a.name);
+                    break;
+                }
+            }
+            for (int i = 0; i < accountList.size(); i++){
+                String account = accountList.get(i);
+                profile = new ProfileDrawerItem().withEmail(account).withName(account).withIcon(getResources().getDrawable(R.drawable.profile1)).withIdentifier(i);
                 accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
             }
         }
@@ -261,7 +261,8 @@ public class HomeActivity extends AppCompatActivity {
                             for (Issue issue : issueList) {
 
                                 if (true) {      //If Issue belongs to applied filter then add or update rvAdapter
-                                    if (issue.getFixAt() != null && issue.getAckAt() != null) {
+
+                                    if (issue.getFixAt() == null && issue.getAckAt() == null) {
                                         Log.i(TAG, "Adapter : add Issue");
                                         rvAdapter2.insert(issue);
                                     } else {
@@ -288,6 +289,7 @@ public class HomeActivity extends AppCompatActivity {
                     Log.i(TAG, "response status: " + data);
                     if (resp.statusCode == 401) {
                         invalidateAccessToken();
+                        getAuthToken();
                     } else {
                         Toast.makeText(mContext, "Unable to Sync. Check your Internet Connection.", Toast.LENGTH_SHORT).show();
                     }
@@ -536,6 +538,7 @@ public class HomeActivity extends AppCompatActivity {
                             editor.putString(Constants.USER_ACCESS_TOKEN,authToken);
                             editor.putBoolean(Constants.IS_USER_LOGGED_IN, true);
                             editor.commit();
+                            syncIssues();
                             updateAccountHeader(username);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -630,18 +633,20 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void processUserType(String email){
         Log.d(TAG,"processUserType: email = " + email);
-        invalidateAccessToken();
         User user = userService.findByEmail(email);
-        userPref.edit().putString(Constants.USER_EMAIL,email).commit();
+        userPref.edit()
+                .putString(Constants.USER_EMAIL,email)
+                .putString(Constants.USER_ACCESS_TOKEN, null)
+                .commit();
         chooseScreen(user.getUserType());
         onAccountChange();
     }
 
     private void chooseScreen(String userType){
         Log.d(TAG,"chooseScreen: userType = " + userType);
-        if(userType.equalsIgnoreCase(USER_FACTORY)){
+        if(userType.equalsIgnoreCase(Constants.USER_FACTORY)){
             appNo = 1;
-        }else if(userType.equalsIgnoreCase(USER_SAMPLING)){
+        }else if(userType.equalsIgnoreCase(Constants.USER_SAMPLING)){
             appNo = 2;
             showFab(true);
         }else {

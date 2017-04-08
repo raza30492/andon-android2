@@ -100,11 +100,9 @@ public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
     public void update(Issue issue){
         Issue temp = new Issue();
         temp.setId(issue.getId());
-        set.remove(temp);
-        temp.setFixAt(null);
-        set.remove(temp);
-        temp.setAckAt(null);
-        set.remove(temp);
+        set.remove(temp);  //try removing if it was earlier in raised state
+        temp.setAckAt(issue.getAckAt());
+        set.remove(temp);  //try removing if it was earlier in acknowledged state
 
         set.add(issue);
         notifyDataSetChanged();
