@@ -18,10 +18,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.splunk.mint.Mint;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,6 +65,8 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
+        Mint.initAndStartSession(getApplication(), "39a8187d");
         setContentView(R.layout.activity_raise_issue2);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -174,8 +178,8 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             @Override
             public void onErrorResponse(VolleyError error) {
                 NetworkResponse resp = error.networkResponse;
-                String data = new String(resp.data != null ? resp.data : "empty body".getBytes());
-                Log.d(TAG,data);
+//                String data = new String(resp.data != null ? resp.data : "empty body".getBytes());
+//                Log.d(TAG,data);
                 if (resp.statusCode == 400){
                     showMessage("Some error occured. inform developer.");
                 }
@@ -196,6 +200,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             return;
         }
         MyJsonRequest request = new MyJsonRequest(Request.Method.POST,url,issue,listener,errorListener,accessToken);
+        request.setRetryPolicy( new DefaultRetryPolicy(20*1000,0,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         request.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request);
     }

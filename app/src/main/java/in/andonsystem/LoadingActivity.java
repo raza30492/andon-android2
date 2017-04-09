@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.splunk.mint.Mint;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,6 +53,8 @@ public class LoadingActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
+        Mint.initAndStartSession(getApplication(), "39a8187d");
         setContentView(R.layout.activity_loading);
         Log.d(TAG, "onCreate()");
         AppClose.activity1 = this;
@@ -100,21 +103,25 @@ public class LoadingActivity extends AppCompatActivity {
                         Log.i(TAG, "Config Response :" + response.toString());
 
                         try {
-                            if (response.has("update") && response.getBoolean("update")) {
-                                Log.d(TAG, "Update application");
-                                progress.setVisibility(View.GONE);
-                            }
-                            else if (response.getBoolean("initialize")) {
-                                firstLaunch = true;
-                                init();
-                            }
-                            else if (response.has("version")) {
+                            if (response.has("update")) {
+                                if (response.getBoolean("update")) {
+                                    Log.d(TAG, "Update application");
+                                    progress.setVisibility(View.GONE);
+                                }
+
+                            }else { //response will have version
                                 String version = response.getString("version");
                                 appPref.edit().putString(Constants.APP_VERSION, version).commit();
                                 syncUsers();
                                 goToHomeAfterInit();
                             }
-
+                            if (response.getBoolean("initialize")) {
+                                firstLaunch = true;
+                                init();
+                            }else {
+                                syncUsers();
+                                goToHomeAfterInit();
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -165,7 +172,7 @@ public class LoadingActivity extends AppCompatActivity {
         Response.ErrorListener errorListener1 = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
+                //Log.e(TAG, error.getMessage());
             }
         };
         JsonArrayRequest request1 = new JsonArrayRequest(Request.Method.GET, url1, null, listener1, errorListener1);
@@ -202,7 +209,7 @@ public class LoadingActivity extends AppCompatActivity {
         Response.ErrorListener errorListener2 = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getStackTrace().toString());
+                //Log.e(TAG, error.getStackTrace().toString());
             }
         };
         JsonArrayRequest request2 = new JsonArrayRequest(Request.Method.GET, url2, null, listener2, errorListener2);
@@ -238,7 +245,7 @@ public class LoadingActivity extends AppCompatActivity {
         Response.ErrorListener errorListener3 = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
+                //Log.e(TAG, error.getMessage());
             }
         };
         JsonArrayRequest request3 = new JsonArrayRequest(Request.Method.GET, url3, null, listener3, errorListener3);
@@ -305,21 +312,23 @@ public class LoadingActivity extends AppCompatActivity {
 
     private void syncUsers(){
         Log.d(TAG,"syncUsers()");
-        Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
+        final Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
         String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
-        Response.Listener<JSONArray> listener4 = new Response.Listener<JSONArray>() {
+        Response.Listener<JSONObject> listener4 = new Response.Listener<JSONObject>() {
             @Override
-            public void onResponse(JSONArray response) {
+            public void onResponse(JSONObject response) {
                 Log.i(TAG, "users Response :" + response.toString());
                 try {
+                    JSONArray jsonUsers = response.getJSONArray("users");
+                    Long userSync = response.getLong("userSync");
                     List<User> users = new ArrayList<>();
                     Long userId;
                     JSONObject u, b;
                     JSONArray buyers;
                     List<UserBuyer> userBuyerList;
-                    for (int i = 0; i < response.length(); i++) {
+                    for (int i = 0; i < jsonUsers.length(); i++) {
 
-                        u = response.getJSONObject(i);
+                        u = jsonUsers.getJSONObject(i);
                         userId = u.getLong("id");
                         if (userService.exists(userId)) {
                             userBuyerService.deleteByUser(userId);
@@ -343,20 +352,21 @@ public class LoadingActivity extends AppCompatActivity {
                             userBuyerService.saveBatch(userBuyerList);
                         }
                     }
+                    syncPref.edit().putLong(Constants.LAST_USER_SYNC, userSync).commit();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                syncPref.edit().putLong(Constants.LAST_USER_SYNC, System.currentTimeMillis()).commit();
+
                 goToHomeAfterInit();
             }
         };
         Response.ErrorListener errorListener4 = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
+                //Log.e(TAG, error.getMessage());
             }
         };
-        JsonArrayRequest request4 = new JsonArrayRequest(Request.Method.GET, url4, null, listener4, errorListener4);
+        JsonObjectRequest request4 = new JsonObjectRequest(Request.Method.GET, url4, null, listener4, errorListener4);
         request4.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request4);
     }

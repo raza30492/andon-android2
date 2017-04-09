@@ -21,11 +21,14 @@ android {
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 //        }
     }
+
 }
 
 greendao {
     schemaVersion 2
 }
+
+
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -41,5 +44,12 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile('com.mikepenz:materialdrawer:5.9.0@aar') {
         transitive = true
+    }
+    compile 'com.splunk:mint-android-sdk:5.2.1'
+}
+
+repositories {
+    maven {
+        url uri('mint-plugin-repo-5.2.1')
     }
 }

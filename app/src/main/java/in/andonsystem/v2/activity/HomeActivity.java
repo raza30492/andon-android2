@@ -34,6 +34,8 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -44,6 +46,7 @@ import com.mikepenz.materialdrawer.model.ProfileSettingDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.mikepenz.materialdrawer.model.interfaces.Nameable;
+import com.splunk.mint.Mint;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,13 +58,16 @@ import java.util.List;
 import java.util.TreeSet;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterHome;
 import in.andonsystem.v2.authenticator.AuthConstants;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
+import in.andonsystem.v2.entity.UserBuyer;
 import in.andonsystem.v2.service.IssueService;
+import in.andonsystem.v2.service.UserBuyerService;
 import in.andonsystem.v2.service.UserService;
 import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.MyJsonRequest;
@@ -92,6 +98,7 @@ public class HomeActivity extends AppCompatActivity {
     private App app;
     private IssueService issueService;
     private UserService userService;
+    private UserBuyerService userBuyerService;
     private SharedPreferences syncPref;
     private SharedPreferences userPref;
 
@@ -103,15 +110,18 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
+        Mint.initAndStartSession(getApplication(), "39a8187d");
         setContentView(R.layout.activity_home);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        
+        AppClose.activity2 = this;
         mContext = this;
         app = (App)getApplication();
         mAccountManager = AccountManager.get(this);
         issueService = new IssueService(app);
         userService = new UserService(app);
+        userBuyerService = new UserBuyerService(app);
         syncPref = getSharedPreferences(Constants.SYNC_PREF,0);
         userPref = getSharedPreferences(Constants.USER_PREF,0);
 
@@ -152,7 +162,7 @@ public class HomeActivity extends AppCompatActivity {
             }
             for (int i = 0; i < accountList.size(); i++){
                 String account = accountList.get(i);
-                profile = new ProfileDrawerItem().withEmail(account).withName(account).withIcon(getResources().getDrawable(R.drawable.profile1)).withIdentifier(i);
+                profile = new ProfileDrawerItem().withEmail(account)/*.withName(account)*/.withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(i);
                 accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
             }
         }
@@ -170,6 +180,11 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        if(drawer.isDrawerOpen()){
+            drawer.closeDrawer();
+        }else {
+            AppClose.close();
+        }
     }
 
     @Override
@@ -285,8 +300,8 @@ public class HomeActivity extends AppCompatActivity {
                 public void onErrorResponse(VolleyError error) {
                     Log.e(TAG, error.toString());
                     NetworkResponse resp = error.networkResponse;
-                    String data = new String(resp.data);
-                    Log.i(TAG, "response status: " + data);
+//                    String data = new String(resp.data);
+//                    Log.i(TAG, "response status: " + data);
                     if (resp.statusCode == 401) {
                         invalidateAccessToken();
                         getAuthToken();
@@ -476,16 +491,29 @@ public class HomeActivity extends AppCompatActivity {
         drawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(toolbar)
+                .withSliderBackgroundColor(getResources().getColor(R.color.slide_background))
                 .withDisplayBelowStatusBar(true)
                 .withAccountHeader(accountHeader)
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Report").withIdentifier(1)
+                    new PrimaryDrawerItem().withName("Report").withIcon(getResources().getDrawable(R.drawable.ic_show_chart_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
+                    new PrimaryDrawerItem().withName("Contacts").withIcon(getResources().getDrawable(R.drawable.ic_contact_phone_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
+                    new PrimaryDrawerItem().withName("Help").withIcon(getResources().getDrawable(R.drawable.ic_help_outline_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
                         if (drawerItem instanceof Nameable) {
                             Log.d(TAG, ((Nameable) drawerItem).getName().getText(mContext));
+                            String selected = ((Nameable) drawerItem).getName().getText(mContext);
+                            Intent i = null;
+                            if (selected.equals("Report")) {
+                                i = new Intent(mContext, ReportActivity.class);
+                            }else if (selected.equals("Contacts")) {
+                                i = new Intent(mContext, ContactActivity.class);
+                            }else if (selected.equals("Help")) {
+                                i = new Intent(mContext, HelpActivity.class);
+                            }
+                            startActivity(i);
                         }
                         return false;
                     }
@@ -596,11 +624,15 @@ public class HomeActivity extends AppCompatActivity {
         if(accountList.size() == 0){
             accountSelected = 0;
             User user = userService.findByEmail(name);
-            Log.d(TAG, "is user null = " + (user == null));
-            chooseScreen(user.getUserType());
-            onAccountChange();
+            //User added while after app started, so unable to find in local db. sync db
+            if(user == null){
+                syncUsers();
+            }else {
+                chooseScreen(user.getUserType());
+                onAccountChange();
+            }
         }
-        ProfileDrawerItem profile =  new ProfileDrawerItem().withEmail(name).withName(name).withIcon(getResources().getDrawable(R.drawable.profile1)).withIdentifier(accountList.size());
+        ProfileDrawerItem profile =  new ProfileDrawerItem().withEmail(name)/*.withName(name)*/.withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(accountList.size());
         accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
         accountList.add(name);
     }
@@ -633,13 +665,18 @@ public class HomeActivity extends AppCompatActivity {
      */
     private void processUserType(String email){
         Log.d(TAG,"processUserType: email = " + email);
-        User user = userService.findByEmail(email);
         userPref.edit()
                 .putString(Constants.USER_EMAIL,email)
                 .putString(Constants.USER_ACCESS_TOKEN, null)
                 .commit();
-        chooseScreen(user.getUserType());
-        onAccountChange();
+
+        User user = userService.findByEmail(email);
+        if(user == null){
+            syncUsers();
+        }else {
+            chooseScreen(user.getUserType());
+            onAccountChange();
+        }
     }
 
     private void chooseScreen(String userType){
@@ -664,5 +701,69 @@ public class HomeActivity extends AppCompatActivity {
             fab.hide();
         }
     }
+
+    private void syncUsers(){
+        Log.d(TAG,"syncUsers()");
+        final Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
+        String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
+        Response.Listener<JSONObject> listener4 = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i(TAG, "users Response :" + response.toString());
+                try {
+                    JSONArray jsonUsers = response.getJSONArray("users");
+                    Long userSync = response.getLong("userSync");
+                    List<User> users = new ArrayList<>();
+                    Long userId;
+                    JSONObject u, b;
+                    JSONArray buyers;
+                    List<UserBuyer> userBuyerList;
+                    for (int i = 0; i < jsonUsers.length(); i++) {
+
+                        u = jsonUsers.getJSONObject(i);
+                        userId = u.getLong("id");
+                        if (userService.exists(userId)) {
+                            userBuyerService.deleteByUser(userId);
+                        }
+                        userService.saveOrUpdate(new User(
+                                userId,
+                                u.getString("name"),
+                                u.getString("email"),
+                                u.getString("mobile"),
+                                u.getString("role"),
+                                u.getString("userType"),
+                                u.getString("level")
+                        ));
+                        buyers = u.getJSONArray("buyers");
+                        if (buyers.length() > 0) {
+                            userBuyerList = new ArrayList<>();
+                            for (int j = 0; j < buyers.length(); j++){
+                                b = buyers.getJSONObject(j);
+                                userBuyerList.add(new UserBuyer(null,u.getLong("id"), b.getLong("id")));
+                            }
+                            userBuyerService.saveBatch(userBuyerList);
+                        }
+                    }
+                    syncPref.edit().putLong(Constants.LAST_USER_SYNC, userSync).commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String email = userPref.getString(Constants.USER_EMAIL, null);
+                User user = userService.findByEmail(email);
+                chooseScreen(user.getUserType());
+                onAccountChange();
+            }
+        };
+        Response.ErrorListener errorListener4 = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e(TAG, error.getMessage());
+            }
+        };
+        JsonObjectRequest request4 = new JsonObjectRequest(Request.Method.GET, url4, null, listener4, errorListener4);
+        request4.setTag(TAG);
+        AppController.getInstance().addToRequestQueue(request4);
+    }
+
 
 }

@@ -11,9 +11,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.splunk.mint.Mint;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +31,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import in.andonsystem.App;
+import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterNotification;
 import in.andonsystem.v2.dto.Notification;
@@ -52,6 +63,8 @@ public class NotificationActivity2 extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
+        Mint.initAndStartSession(getApplication(), "39a8187d");
         setContentView(R.layout.activity_notification2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -67,7 +80,7 @@ public class NotificationActivity2 extends AppCompatActivity {
         container = (RelativeLayout) findViewById(R.id.content_nfn2);
         progress = (ProgressBar) findViewById(R.id.nfn2_loading);
         prepareScreen();
-
+        getCurrentTime();
     }
 
     @Override
@@ -77,8 +90,6 @@ public class NotificationActivity2 extends AppCompatActivity {
         if(currentTime == null){
             return;
         }
-
-        long timeNow = System.currentTimeMillis();
         TreeSet<Notification> list = new TreeSet<>();
         String message;
         long timeAt;
@@ -91,18 +102,18 @@ public class NotificationActivity2 extends AppCompatActivity {
                     Log.d(TAG, "MERCHANDISING: issue = " + issue.getProblem());
                     if(issue.getFixAt() != null){
                         message = "Problem " + issue.getProblem() + " of " + issue.getBuyer().getTeam() + ":" + issue.getBuyer().getName() + " was resolved.";
-                        timeAt = timeNow - issue.getFixAt().getTime();
+                        timeAt = currentTime - issue.getFixAt().getTime();
                         list.add(new Notification(issue.getId(),message,timeAt, 2));
                     }
                     else if(issue.getAckAt() != null){
                         message = "Problem " +  issue.getProblem() + " of " + issue.getBuyer().getTeam() + ":" + issue.getBuyer().getName() + " was acknowledged by "
                                 + (issue.getAckBy() == user.getId() ? "you" : issue.getAckByUser().getName());
-                        timeAt = timeNow - issue.getAckAt().getTime();
+                        timeAt = currentTime - issue.getAckAt().getTime();
                         list.add(new Notification(issue.getId(),message,timeAt, 1));
                     }
                     else {
                         message = "Problem " +  issue.getProblem() + " of " + issue.getBuyer().getTeam() + ":" + issue.getBuyer().getName() + " was raised by " + issue.getRaisedByUser().getName();
-                        timeAt = timeNow - issue.getRaisedAt().getTime();
+                        timeAt = currentTime - issue.getRaisedAt().getTime();
                         list.add(new Notification(issue.getId(),message,timeAt, 0));
                     }
                 }
@@ -117,11 +128,11 @@ public class NotificationActivity2 extends AppCompatActivity {
                     if (issue.getFixAt() == null) {
                         if (issue.getAckAt() != null) {
                             message = issue.getAckByUser().getName() + " acknowledged " + "problem " +  issue.getProblem() + " of " + issue.getBuyer().getTeam() + ":" + issue.getBuyer().getName();
-                            timeAt = timeNow - issue.getAckAt().getTime();
+                            timeAt = currentTime - issue.getAckAt().getTime();
                             list.add(new Notification(issue.getId(),message,timeAt, 1));
                         }else {
                             message = "Problem " +  issue.getProblem() + " of " + issue.getBuyer().getTeam() + ":" + issue.getBuyer().getName() + " was raised by you. ";
-                            timeAt = timeNow - issue.getRaisedAt().getTime();
+                            timeAt = currentTime - issue.getRaisedAt().getTime();
                             list.add(new Notification(issue.getId(),message,timeAt, 0));
                         }
                     }
@@ -171,6 +182,28 @@ public class NotificationActivity2 extends AppCompatActivity {
     }
 
     private void getCurrentTime(){
-        
+        String url = Constants.API_BASE_URL + "/misc/current_time";
+        Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i(TAG, "Response :" + response.toString());
+                try {
+                   currentTime = response.getLong("currentTime");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                onStart();
+            }
+        };
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e(TAG, error.getMessage());
+            }
+        };
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, listener, errorListener);
+        request.setTag(TAG);
+        AppController.getInstance().addToRequestQueue(request);
+
     }
 }

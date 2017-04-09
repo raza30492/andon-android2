@@ -11,14 +11,14 @@ import com.splunk.mint.Mint;
 
 import in.andonsystem.R;
 
-public class HelpActivity extends AppCompatActivity {
+public class ReportActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
         Mint.initAndStartSession(getApplication(), "39a8187d");
-        setContentView(R.layout.activity_help);
+        setContentView(R.layout.activity_report);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
