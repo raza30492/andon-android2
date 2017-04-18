@@ -1,8 +1,10 @@
 package in.andonsystem;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import in.andonsystem.v2.activity.HomeActivity;
 import in.andonsystem.v2.entity.Buyer;
+import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.entity.UserBuyer;
 import in.andonsystem.v2.service.BuyerService;
@@ -38,10 +41,12 @@ import in.andonsystem.v2.util.MiscUtil;
 public class LoadingActivity extends AppCompatActivity {
     private final String TAG = LoadingActivity.class.getSimpleName();
 
+    private Context mContext;
     private App app;
     private BuyerService buyerService;
     private UserService userService;
     private UserBuyerService userBuyerService;
+    private IssueService issueService;
     private ProgressBar progress;
     private SharedPreferences appPref;
     private SharedPreferences userPref;
@@ -59,9 +64,11 @@ public class LoadingActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate()");
         AppClose.activity1 = this;
 
+        mContext = this;
         app = (App) getApplication();
         buyerService = new BuyerService(app);
         userService = new UserService(app);
+        issueService = new IssueService(app);
         userBuyerService = new UserBuyerService(app);
         progress = (ProgressBar) findViewById(R.id.loading_progress);
         appPref = getSharedPreferences(Constants.APP_PREF, 0);
@@ -89,11 +96,6 @@ public class LoadingActivity extends AppCompatActivity {
             } else {
                 //Delete older issue
                 new IssueService(app).deleteAllOlder();
-                //Set teams and problems in App
-                String problems = appPref.getString(Constants.APP_PROBLEMS, "");
-                app.setProblems(problems.split(";"));
-                String teams = appPref.getString(Constants.APP_TEAMS, "");
-                app.setTeams(teams.split(";"));
 
                 String url = Constants.API_BASE_URL + "/misc/config?version=" + appPref.getString(Constants.APP_VERSION, "");
                 Log.i(TAG, "config url: " + url);
@@ -103,10 +105,31 @@ public class LoadingActivity extends AppCompatActivity {
                         Log.i(TAG, "Config Response :" + response.toString());
 
                         try {
+
                             if (response.has("update")) {
                                 if (response.getBoolean("update")) {
                                     Log.d(TAG, "Update application");
                                     progress.setVisibility(View.GONE);
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                                    builder.setTitle("Update Available");
+                                    builder.setMessage("A new version of application is available.Please update for app to work properly.");
+                                    builder.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://andonsystem.in/download.jsp"));
+                                            startActivity(intent);
+                                        }
+                                    });
+                                    builder.setNegativeButton("LATER", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            dialog.dismiss();
+                                            syncUsers();
+                                            goToHomeAfterInit();
+                                        }
+                                    });
+                                    builder.create().show();
                                 }
 
                             }else { //response will have version
@@ -115,13 +138,16 @@ public class LoadingActivity extends AppCompatActivity {
                                 syncUsers();
                                 goToHomeAfterInit();
                             }
-                            if (response.getBoolean("initialize")) {
-                                firstLaunch = true;
-                                init();
-                            }else {
-                                syncUsers();
-                                goToHomeAfterInit();
+                            if (response.has("update") && !response.getBoolean("update")) {
+                                if (response.getBoolean("initialize")) {
+                                    firstLaunch = true;
+                                    init();
+                                }else {
+                                    syncUsers();
+                                    goToHomeAfterInit();
+                                }
                             }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -147,6 +173,9 @@ public class LoadingActivity extends AppCompatActivity {
         AppController appController = AppController.getInstance();
         buyerService.deleteAll();
         userService.deleteAll();
+        issueService.deleteAll();
+        userBuyerService.deleteAll();
+
         /////////////////////////// get Buyers ////////////////////////
         String url1 = Constants.API_BASE_URL + "/buyers";
         Response.Listener<JSONArray> listener1 = new Response.Listener<JSONArray>() {
@@ -192,7 +221,6 @@ public class LoadingActivity extends AppCompatActivity {
                     for (int i = 0; i < response.length(); i++) {
                         problems[i + 1] = response.getString(i);
                     }
-                    app.setProblems(problems);
                     StringBuilder builder = new StringBuilder();
                     for (String p : problems) {
                         builder.append(p + ";");
@@ -223,13 +251,11 @@ public class LoadingActivity extends AppCompatActivity {
             public void onResponse(JSONArray response) {
                 Log.i(TAG, "teams Response :" + response.toString());
 
-                String[] teams = new String[response.length() + 1];
-                teams[0] = "Select Team";
+                String[] teams = new String[response.length()];
                 try {
                     for (int i = 0; i < response.length(); i++) {
-                        teams[i + 1] = response.getString(i);
+                        teams[i] = response.getString(i);
                     }
-                    app.setTeams(teams);
                     StringBuilder builder = new StringBuilder();
                     for (String t : teams) {
                         builder.append(t + ";");

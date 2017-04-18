@@ -98,10 +98,10 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
                 Log.i(TAG,error.toString());
                 NetworkResponse resp = error.networkResponse;
                 Log.i(TAG, "response status: " + resp.statusCode);
-                if(resp.statusCode == 400){
+                if(resp != null && resp.statusCode == 400){
                     result.putString(AuthConstants.ARG_AUTHENTICATION_ERROR,"Incorrect credentials. Try again");
                 }
-                if(resp.statusCode == 401){
+                if(resp != null && resp.statusCode == 401){
                     result.putString(AuthConstants.ARG_AUTHENTICATION_ERROR,"Client is not authorized.");
                 }
                 finishLogin(result);
@@ -154,5 +154,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
 
     }
 
+    public void forgotPassword(View view){
+        Toast.makeText(this,"Not implemented yet",Toast.LENGTH_SHORT).show();
+    }
 
 }

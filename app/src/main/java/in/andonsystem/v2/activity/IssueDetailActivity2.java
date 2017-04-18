@@ -175,7 +175,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         layout.removeView(ackButton);
-        layout.addView(fixButton);
+        layout.removeView(fixButton);
     }
 
     private void acknowledge(){
@@ -198,7 +198,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
                 NetworkResponse resp = error.networkResponse;
                 String data = new String((resp.data != null) ? resp.data : "Empty body".getBytes());
                 Log.i(TAG, "response data: " + data);
-                if (resp.statusCode == 401) {
+                if (resp != null && resp.statusCode == 401) {
                     invalidateAccessToken();
                     getAuthToken("ACK");
                 } else {
@@ -244,7 +244,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
                 NetworkResponse resp = error.networkResponse;
                 String data = new String((resp.data != null) ? resp.data : "Empty body".getBytes());
                 Log.i(TAG, "response data: " + data);
-                if (resp.statusCode == 401) {
+                if (resp != null && resp.statusCode == 401) {
                     invalidateAccessToken();
                     getAuthToken("FIX");
                 } else {

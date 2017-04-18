@@ -101,6 +101,7 @@ public class HomeActivity extends AppCompatActivity {
     private UserBuyerService userBuyerService;
     private SharedPreferences syncPref;
     private SharedPreferences userPref;
+    private SharedPreferences appPref;
 
     private AccountManager mAccountManager;
     private List<String> accountList = new ArrayList<>();
@@ -124,6 +125,7 @@ public class HomeActivity extends AppCompatActivity {
         userBuyerService = new UserBuyerService(app);
         syncPref = getSharedPreferences(Constants.SYNC_PREF,0);
         userPref = getSharedPreferences(Constants.USER_PREF,0);
+        appPref = getSharedPreferences(Constants.APP_PREF,0);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -143,9 +145,11 @@ public class HomeActivity extends AppCompatActivity {
             getTokenForAccountCreateIfNeeded();
         }else {
             String email = userPref.getString(Constants.USER_EMAIL, null);
-            User user = userService.findByEmail(email);
-            chooseScreen(user.getUserType());
-            onAccountChange();
+            if (email == null) {
+                email = accounts[0].name;
+                userPref.edit().putString(Constants.USER_EMAIL,email).commit();
+            }
+
             ProfileDrawerItem profile;
             accountSelected = 0;
             for(Account a: accounts){
@@ -165,6 +169,10 @@ public class HomeActivity extends AppCompatActivity {
                 profile = new ProfileDrawerItem().withEmail(account)/*.withName(account)*/.withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(i);
                 accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
             }
+
+            User user = userService.findByEmail(email);
+            chooseScreen(user.getUserType());
+            onAccountChange();
         }
 
     }
@@ -302,7 +310,7 @@ public class HomeActivity extends AppCompatActivity {
                     NetworkResponse resp = error.networkResponse;
 //                    String data = new String(resp.data);
 //                    Log.i(TAG, "response status: " + data);
-                    if (resp.statusCode == 401) {
+                    if (resp != null && resp.statusCode == 401) {
                         invalidateAccessToken();
                         getAuthToken();
                     } else {
@@ -396,9 +404,13 @@ public class HomeActivity extends AppCompatActivity {
         emptyMessage.setText("No Open Issues Found.");
 
         //Set adapter for Team Filter
-        final String[] teams = app.getTeams();
-        teams[0] = "All Team";
-        ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
+        final String[] teams = appPref.getString(Constants.APP_TEAMS, "").split(";");
+        List<String> teamList = new ArrayList<>();
+        teamList.add("All Team");
+        for (String t: teams) {
+            teamList.add(t);
+        }
+        ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teamList);
         teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         teamFilter.setAdapter(teamAdapter);
 
@@ -428,7 +440,7 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG,"buildAccountHeader");
         accountHeader = new AccountHeaderBuilder()
                 .withActivity(this)
-                .withHeaderBackground(R.drawable.header)
+                .withHeaderBackground(getResources().getDrawable(R.drawable.header))
                 .addProfiles(
                         new ProfileSettingDrawerItem().withName("Add Account").withIcon(android.R.drawable.ic_input_add).withIdentifier(ACCOUNT_ADD),
                         new ProfileSettingDrawerItem().withName("Manage Account").withIcon(android.R.drawable.ic_menu_preferences).withIdentifier(ACCOUNT_MANAGE)

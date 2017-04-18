@@ -30,4 +30,8 @@ public class UserBuyerService {
         List<UserBuyer> list = userBuyerDao.queryBuilder().where(UserBuyerDao.Properties.UserId.eq(userId)).list();
         userBuyerDao.deleteInTx(list);
     }
+
+    public void deleteAll(){
+        userBuyerDao.deleteAll();
+    }
 }

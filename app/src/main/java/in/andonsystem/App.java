@@ -18,10 +18,6 @@ public class App extends Application {
 
     public static final boolean ENCRYPTED = true;
     private DaoSession daoSession;
-    private RequestQueue mRequestQueue;
-
-    private String[] teams;
-    private String[] problems;
 
     @Override
     public void onCreate() {
@@ -33,21 +29,5 @@ public class App extends Application {
 
     public DaoSession getDaoSession(){
         return daoSession;
-    }
-
-    public String[] getTeams() {
-        return teams;
-    }
-
-    public void setTeams(String[] teams) {
-        this.teams = teams;
-    }
-
-    public String[] getProblems() {
-        return problems;
-    }
-
-    public void setProblems(String[] problems) {
-        this.problems = problems;
     }
 }

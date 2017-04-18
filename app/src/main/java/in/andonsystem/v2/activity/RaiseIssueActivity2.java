@@ -52,6 +52,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
     private App app;
 
     private SharedPreferences userPref;
+    private SharedPreferences appPref;
     private UserService userService;
 
     private Spinner teamFilter;
@@ -77,6 +78,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         app = (App) getApplication();
         mAccountManager = AccountManager.get(this);
         userPref = getSharedPreferences(Constants.USER_PREF, 0);
+        appPref = getSharedPreferences(Constants.APP_PREF,0);
         userService = new UserService(app);
 
         teamFilter = (Spinner) findViewById(R.id.ri_team_filter);
@@ -85,9 +87,13 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         description = (EditText) findViewById(R.id.ri_problem_desc);
 
         /*//////////////// Populating team filter //////////////////////*/
-        final String[] teams = app.getTeams();
-        teams[0] = "Select Team";
-        ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teams);
+        final String[] teams = appPref.getString(Constants.APP_TEAMS,"").split(";");
+        List<String> teamList = new ArrayList<>();
+        teamList.add("Select Team");
+        for (String t: teams) {
+            teamList.add(t);
+        }
+        ArrayAdapter<String> teamAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, teamList);
         teamAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         teamFilter.setAdapter(teamAdapter);
         teamFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -105,7 +111,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         updateBuyer();
 
          /*//////////////// Populating problem filter //////////////////////*/
-        final String[] problems = app.getProblems();
+        final String[] problems = appPref.getString(Constants.APP_PROBLEMS,"").split(";");
         ArrayAdapter<String> problemAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, problems);
         problemAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         problemFilter.setAdapter(problemAdapter);
@@ -180,10 +186,10 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
                 NetworkResponse resp = error.networkResponse;
 //                String data = new String(resp.data != null ? resp.data : "empty body".getBytes());
 //                Log.d(TAG,data);
-                if (resp.statusCode == 400){
+                if (resp != null && resp.statusCode == 400){
                     showMessage("Some error occured. inform developer.");
                 }
-                else if (resp.statusCode == 401){
+                else if (resp != null && resp.statusCode == 401){
                     invalidateAccessToken();
                     getAuthToken();
                 }

@@ -77,4 +77,8 @@ public class IssueService {
         issueDao.deleteInTx(issues);
     }
 
+    public void deleteAll() {
+        issueDao.deleteAll();
+    }
+
 }
