@@ -69,8 +69,9 @@ public class IssueService {
     }
 
     public void deleteAllOlder(){
+        Log.d(TAG, "deleteOlder than 2 days.");
         Long time = new Date().getTime();
-        Date midnight = new Date(time - time % (24 * 60 * 60 * 1000));
+        Date midnight = new Date(time -((24 * 60 * 60 * 1000) + time % (24 * 60 * 60 * 1000)));
         List<Issue> issues = issueDao.queryBuilder()
                 .where(IssueDao.Properties.RaisedAt.lt(midnight))
                 .list();

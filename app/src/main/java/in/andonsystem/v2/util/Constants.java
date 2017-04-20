@@ -21,7 +21,6 @@ public class Constants {
     /*App Preference file*/
     public static final String APP_PREF = "APP_PREF";
     public static final String FIRST_LAUNCH = "first.launch";
-    public static final String APP_VERSION = "app.version";
     public static final String APP_PROBLEMS = "app.problems";
     public static final String APP_TEAMS = "app.teams";
 

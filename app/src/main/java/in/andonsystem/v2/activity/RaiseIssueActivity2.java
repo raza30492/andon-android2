@@ -88,7 +88,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
 
         /*//////////////// Populating team filter //////////////////////*/
         final String[] teams = appPref.getString(Constants.APP_TEAMS,"").split(";");
-        List<String> teamList = new ArrayList<>();
+        final List<String> teamList = new ArrayList<>();
         teamList.add("Select Team");
         for (String t: teams) {
             teamList.add(t);
@@ -100,7 +100,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.i(TAG, "onItemSelect() : team");
-                selectedTeam = teams[position];
+                selectedTeam = teamList.get(position);
                 updateBuyer();
             }
 

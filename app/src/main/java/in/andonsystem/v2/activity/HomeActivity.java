@@ -73,7 +73,7 @@ import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.MyJsonRequest;
 
 public class HomeActivity extends AppCompatActivity {
-    
+
     private final String TAG = HomeActivity.class.getSimpleName();
     private final long ACCOUNT_ADD = 10L;
     private final long ACCOUNT_MANAGE = 11L;
@@ -90,8 +90,8 @@ public class HomeActivity extends AppCompatActivity {
     private Spinner teamFilter;
     private String selectedTeam = "All Team";
     AdapterHome rvAdapter2;
-    
-    
+
+
     private int appNo;
     private int accountSelected = -1;
     private Context mContext;
@@ -140,6 +140,12 @@ public class HomeActivity extends AppCompatActivity {
         buildAccountHeader();
         buildDrawer();
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         Account[] accounts = mAccountManager.getAccountsByType(AuthConstants.VALUE_ACCOUNT_TYPE);
         if(accounts.length == 0){
             getTokenForAccountCreateIfNeeded();
@@ -171,16 +177,14 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             User user = userService.findByEmail(email);
+            if (user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
+                appNo = 1;
+            }else {
+                appNo = 2;
+            }
             chooseScreen(user.getUserType());
             onAccountChange();
         }
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        appNo = 2;
         showIssues();
         syncIssues();
     }
@@ -230,6 +234,7 @@ public class HomeActivity extends AppCompatActivity {
                 if(rvAdded){
                     recyclerView.swapAdapter(rvAdapter2, false);
                 }else {
+                    container.removeView(emptyMessage);
                     container.addView(refreshLayout2);
                     refreshLayout2.addView(recyclerView);
                     recyclerView.setAdapter(rvAdapter2);
@@ -247,10 +252,10 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
     }
-    
+
     private void syncIssues(){
         Log.d(TAG, "synchIssues()");
-        
+
         if(appNo == 2) {
             refreshLayout2.setRefreshing(true);
             String url = Constants.API_BASE_URL + "/issues?start=" + syncPref.getLong(Constants.LAST_ISSUE2_SYNC, 0);
@@ -375,37 +380,40 @@ public class HomeActivity extends AppCompatActivity {
 
     private void prepareScreen(){
         Log.d(TAG,"prepareScreen");
-        RecyclerView.LayoutParams param1 = new RecyclerView.LayoutParams(
+        RelativeLayout.LayoutParams param0 = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        RelativeLayout.LayoutParams param1 = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        RecyclerView.LayoutParams param2 = new RecyclerView.LayoutParams(
                 RecyclerView.LayoutParams.MATCH_PARENT,
                 RecyclerView.LayoutParams.WRAP_CONTENT
         );
 
         teamFilter = new Spinner(this);
-        teamFilter.setLayoutParams(param1);
+        teamFilter.setLayoutParams(param0);
         teamFilter.setId(R.id.home_team_filter);
 
         refreshLayout2 = new SwipeRefreshLayout(this);
-        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
-                RelativeLayout.LayoutParams.MATCH_PARENT,
-                RelativeLayout.LayoutParams.WRAP_CONTENT
-        );
-        params2.addRule(RelativeLayout.BELOW, R.id.home_team_filter);
-        refreshLayout2.setLayoutParams(params2);
+        param1.addRule(RelativeLayout.BELOW, R.id.home_team_filter);
+        refreshLayout2.setLayoutParams(param1);
 
         recyclerView = new RecyclerView(this);
-        recyclerView.setLayoutParams(param1);
+        recyclerView.setLayoutParams(param2);
 
-        //create text view
         emptyMessage = new TextView(this);
-        emptyMessage.setLayoutParams(params2);
+        emptyMessage.setLayoutParams(param1);
         emptyMessage.setGravity(Gravity.CENTER_HORIZONTAL);
         emptyMessage.setTextColor(ContextCompat.getColor(this, R.color.limeGreen));
         emptyMessage.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
         emptyMessage.setText("No Open Issues Found.");
 
         //Set adapter for Team Filter
-        final String[] teams = appPref.getString(Constants.APP_TEAMS, "").split(";");
-        List<String> teamList = new ArrayList<>();
+        String[] teams = appPref.getString(Constants.APP_TEAMS, "").split(";");
+        final List<String> teamList = new ArrayList<>();
         teamList.add("All Team");
         for (String t: teams) {
             teamList.add(t);
@@ -418,7 +426,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.i(TAG, "onItemSelect() : team");
-                selectedTeam = teams[position];
+                selectedTeam = teamList.get(position);
                 showIssues();
             }
 
@@ -507,9 +515,9 @@ public class HomeActivity extends AppCompatActivity {
                 .withDisplayBelowStatusBar(true)
                 .withAccountHeader(accountHeader)
                 .addDrawerItems(
-                    new PrimaryDrawerItem().withName("Report").withIcon(getResources().getDrawable(R.drawable.ic_show_chart_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
-                    new PrimaryDrawerItem().withName("Contacts").withIcon(getResources().getDrawable(R.drawable.ic_contact_phone_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
-                    new PrimaryDrawerItem().withName("Help").withIcon(getResources().getDrawable(R.drawable.ic_help_outline_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1)
+                        new PrimaryDrawerItem().withName("Report").withIcon(getResources().getDrawable(R.drawable.ic_show_chart_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
+                        new PrimaryDrawerItem().withName("Contacts").withIcon(getResources().getDrawable(R.drawable.ic_contact_phone_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
+                        new PrimaryDrawerItem().withName("Help").withIcon(getResources().getDrawable(R.drawable.ic_help_outline_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -541,22 +549,9 @@ public class HomeActivity extends AppCompatActivity {
 
         if(appNo == 2){
             container.addView(teamFilter);
-            TreeSet<Issue> issues = getIssue2();
-            if(issues.size() > 0){
-                container.addView(refreshLayout2);
-                refreshLayout2.addView(recyclerView);
-                AdapterHome rvAdapter2 = new AdapterHome(this, issues);
-                recyclerView.setAdapter(rvAdapter2);
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                rvAdded = true;
-            }else {
-                if(rvAdded){
-                    container.removeView(refreshLayout2);
-                    refreshLayout2.removeView(recyclerView);
-                }
-                container.addView(emptyMessage);
-                rvAdded =false;
-            }
+            showIssues();
+        }else {
+            //Add app1 filters
         }
     }
 
@@ -776,6 +771,5 @@ public class HomeActivity extends AppCompatActivity {
         request4.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request4);
     }
-
 
 }

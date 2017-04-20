@@ -97,7 +97,7 @@ public class LoadingActivity extends AppCompatActivity {
                 //Delete older issue
                 new IssueService(app).deleteAllOlder();
 
-                String url = Constants.API_BASE_URL + "/misc/config?version=" + appPref.getString(Constants.APP_VERSION, "");
+                String url = Constants.API_BASE_URL + "/misc/config?version=" + getString(R.string.version2);
                 Log.i(TAG, "config url: " + url);
                 Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
                     @Override
@@ -117,6 +117,7 @@ public class LoadingActivity extends AppCompatActivity {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             dialog.dismiss();
+                                            appPref.edit().putBoolean(Constants.FIRST_LAUNCH,true).commit();
                                             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://andonsystem.in/download.jsp"));
                                             startActivity(intent);
                                         }
@@ -132,11 +133,6 @@ public class LoadingActivity extends AppCompatActivity {
                                     builder.create().show();
                                 }
 
-                            }else { //response will have version
-                                String version = response.getString("version");
-                                appPref.edit().putString(Constants.APP_VERSION, version).commit();
-                                syncUsers();
-                                goToHomeAfterInit();
                             }
                             if (response.has("update") && !response.getBoolean("update")) {
                                 if (response.getBoolean("initialize")) {

@@ -32,6 +32,10 @@ public class UserService {
                 .unique();
     }
 
+    public List<User> findAll(){
+        return userDao.loadAll();
+    }
+
     public void saveOrUpdateBatch(List<User> users){
         userDao.insertOrReplaceInTx(users);
     }
