@@ -140,11 +140,6 @@ public class HomeActivity extends AppCompatActivity {
         buildAccountHeader();
         buildDrawer();
 
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
 
         Account[] accounts = mAccountManager.getAccountsByType(AuthConstants.VALUE_ACCOUNT_TYPE);
         if(accounts.length == 0){
@@ -185,6 +180,11 @@ public class HomeActivity extends AppCompatActivity {
             chooseScreen(user.getUserType());
             onAccountChange();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         showIssues();
         syncIssues();
     }

@@ -105,36 +105,33 @@ public class LoadingActivity extends AppCompatActivity {
                         Log.i(TAG, "Config Response :" + response.toString());
 
                         try {
-
-                            if (response.has("update")) {
-                                if (response.getBoolean("update")) {
-                                    Log.d(TAG, "Update application");
-                                    progress.setVisibility(View.GONE);
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                                    builder.setTitle("Update Available");
-                                    builder.setMessage("A new version of application is available.Please update for app to work properly.");
-                                    builder.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            appPref.edit().putBoolean(Constants.FIRST_LAUNCH,true).commit();
-                                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://andonsystem.in/download.jsp"));
-                                            startActivity(intent);
-                                        }
-                                    });
-                                    builder.setNegativeButton("LATER", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            dialog.dismiss();
-                                            syncUsers();
-                                            goToHomeAfterInit();
-                                        }
-                                    });
-                                    builder.create().show();
-                                }
-
+                            if (response.getBoolean("update")) {
+                                Log.d(TAG, "Update application");
+                                progress.setVisibility(View.GONE);
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                                builder.setTitle("Update Available");
+                                builder.setMessage("A new version of application is available.Please update for app to work properly.");
+                                builder.setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        appPref.edit().putBoolean(Constants.FIRST_LAUNCH,true).commit();
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://andonsystem.in/download.jsp"));
+                                        startActivity(intent);
+                                    }
+                                });
+                                builder.setNegativeButton("LATER", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        syncUsers();
+                                        goToHomeAfterInit();
+                                    }
+                                });
+                                builder.create().show();
                             }
-                            if (response.has("update") && !response.getBoolean("update")) {
+
+                            if (!response.getBoolean("update")) {
                                 if (response.getBoolean("initialize")) {
                                     firstLaunch = true;
                                     init();

@@ -8,7 +8,7 @@ SAMPLING:
         add fixButton
 MERCHANDISING:
     if ackAt == null : problem is not acknowledged yet
-        if(user.buyers.contains(issue.buyer)) : If user is concerned to this issue
+        if(user.buyers.contains(issue.dField2)) : If user is concerned to this issue
             if processingAt > 1 : Both level1 and level2 user can acknowledge
                 if user.level == LEVEL1 || user.level == LEVEL2
                     add ackButton
@@ -27,7 +27,7 @@ SAMPLING:
         if ackAt != null : Issue is acknowledged
             User X acknowleged Problem X of TeamY:BuyerZ.
         else    : Issue is raised
-            Problem X for team Y:Buyer Z was raised by you.
+            Problem X for dField1 Y:Buyer Z was raised by you.
 MERCHANDISING:
     Get All issues for which user is related to.
         if fixAt != null : problem is fixed

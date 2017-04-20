@@ -33,7 +33,7 @@
                 android:layout_weight="2"/>
 
             <TextView
-                android:id="@+id/report_line"
+                android:id="@+id/report_dynamic_field1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Line 1"/>
@@ -48,7 +48,7 @@
             android:layout_below="@+id/report_layout1">
 
             <TextView
-                android:id="@+id/report_dept_name"
+                android:id="@+id/report_dynamic_field2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Problem Name"

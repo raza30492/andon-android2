@@ -145,7 +145,12 @@ public class IssueDetailActivity2 extends AppCompatActivity {
         ackBy.setText(( (issue.getAckByUser() != null) ? issue.getAckByUser().getName() : "-" ));
         fixAt.setText(( (issue.getFixAt() != null) ? df.format(issue.getFixAt()) : "-" ));
         fixBy.setText(( (issue.getFixByUser() != null) ? issue.getFixByUser().getName() : "-" ));
-        processingAt.setText("Processing At Level " + issue.getProcessingAt());
+        if (issue.getProcessingAt() == 4 || issue.getFixAt() != null){
+            processingAt.setText("Fixed");
+        }else {
+            processingAt.setText("Processing At Level " + issue.getProcessingAt());
+        }
+        
         desc.setText(issue.getDescription());
 
         /*////////// Adding ack or fix button ///////////////*/
