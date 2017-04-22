@@ -168,6 +168,10 @@ public class LoadingActivity extends AppCompatActivity {
         userService.deleteAll();
         issueService.deleteAll();
         userBuyerService.deleteAll();
+        syncPref.edit()
+                    .putLong(Constants.LAST_USER_SYNC,0L)
+                    .putLong(Constants.LAST_ISSUE2_SYNC,0L)
+                .commit();
 
         /////////////////////////// get Buyers ////////////////////////
         String url1 = Constants.API_BASE_URL + "/buyers";
@@ -311,6 +315,12 @@ public class LoadingActivity extends AppCompatActivity {
             }
         });
         return builder.create();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        AppClose.close();
     }
 
     @Override

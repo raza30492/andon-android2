@@ -52,9 +52,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.TreeSet;
 
 import in.andonsystem.App;
@@ -63,6 +66,7 @@ import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterHome;
 import in.andonsystem.v2.authenticator.AuthConstants;
+import in.andonsystem.v2.dto.Problem;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.entity.UserBuyer;
@@ -102,6 +106,7 @@ public class HomeActivity extends AppCompatActivity {
     private SharedPreferences syncPref;
     private SharedPreferences userPref;
     private SharedPreferences appPref;
+    private DateFormat df;
 
     private AccountManager mAccountManager;
     private List<String> accountList = new ArrayList<>();
@@ -116,7 +121,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        AppClose.activity2 = this;
+        AppClose.activity3 = this;
         mContext = this;
         app = (App)getApplication();
         mAccountManager = AccountManager.get(this);
@@ -126,6 +131,8 @@ public class HomeActivity extends AppCompatActivity {
         syncPref = getSharedPreferences(Constants.SYNC_PREF,0);
         userPref = getSharedPreferences(Constants.USER_PREF,0);
         appPref = getSharedPreferences(Constants.APP_PREF,0);
+        df = new SimpleDateFormat("dd MMM, hh:mm a");
+        df.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -177,7 +184,7 @@ public class HomeActivity extends AppCompatActivity {
             }else {
                 appNo = 2;
             }
-            chooseScreen(user.getUserType());
+            chooseScreen(user);
             onAccountChange();
         }
     }
@@ -226,9 +233,9 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void showIssues() {
-        Log.i(TAG, "showIssues()");
+        Log.i(TAG, "showIssues(), appNo = " + appNo + ", selected team =" + selectedTeam);
         if(appNo == 2){
-            TreeSet<Issue> issues = getIssue2();
+            TreeSet<Problem> issues = getIssue2();
             if(issues.size() > 0){
                 rvAdapter2 = new AdapterHome(this, issues);
                 if(rvAdded){
@@ -254,7 +261,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void syncIssues(){
-        Log.d(TAG, "synchIssues()");
+        Log.d(TAG, "synchIssues(): appNo = " + appNo);
 
         if(appNo == 2) {
             refreshLayout2.setRefreshing(true);
@@ -273,7 +280,7 @@ public class HomeActivity extends AppCompatActivity {
                             if(!rvAdded){
                                 container.addView(refreshLayout2);
                                 refreshLayout2.addView(recyclerView);
-                                TreeSet<Issue> issue = new TreeSet<>();
+                                TreeSet<Problem> issue = new TreeSet<>();
                                 rvAdapter2 = new AdapterHome(mContext, issue);
                                 recyclerView.setAdapter(rvAdapter2);
                                 recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -292,10 +299,10 @@ public class HomeActivity extends AppCompatActivity {
 
                                     if (issue.getFixAt() == null && issue.getAckAt() == null) {
                                         Log.i(TAG, "Adapter : add Issue");
-                                        rvAdapter2.insert(issue);
+                                        rvAdapter2.insert(getProblem(issue));
                                     } else {
                                         Log.i(TAG, "Adapter : update Issue");
-                                        rvAdapter2.update(issue);
+                                        rvAdapter2.update(getProblem(issue));
                                     }
                                 }
                             }
@@ -339,19 +346,30 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private TreeSet<Issue> getIssue2(){
+    private TreeSet<Problem> getIssue2(){
         Log.d(TAG,"getIssue2");
-        TreeSet<Issue> issues = new TreeSet<>();
+        DateFormat df = new SimpleDateFormat("hh:mm aa");
+        df.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
+
+        TreeSet<Problem> issues = new TreeSet<>();
         List<Issue> list;
         if(selectedTeam.contains("All Team")){
             list = issueService.findAll();
         }else{
             list = issueService.findAllByTeam(selectedTeam);
         }
+        Log.d(TAG, "Issue size = " + list.size());
         for (Issue i : list) {
-            issues.add(i);
+            issues.add(getProblem(i));
         }
         return issues;
+    }
+
+    private Problem getProblem(Issue issue){
+        String raiseTime = df.format(issue.getRaisedAt());
+        long downtime = (issue.getFixAt() != null) ? (issue.getAckAt().getTime() - issue.getRaisedAt().getTime() ): -1L;
+        int flag = (issue.getFixAt() != null) ? 2 : ( (issue.getAckAt() != null) ? 1: 0);
+        return new Problem(issue.getId(),issue.getBuyer().getTeam(),issue.getBuyer().getName(),issue.getProblem(),raiseTime,downtime,flag);
     }
 
     private Issue getIssue(JSONObject i) {
@@ -425,7 +443,7 @@ public class HomeActivity extends AppCompatActivity {
         teamFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.i(TAG, "onItemSelect() : team");
+                Log.i(TAG, "onItemSelect()");
                 selectedTeam = teamList.get(position);
                 showIssues();
             }
@@ -546,7 +564,7 @@ public class HomeActivity extends AppCompatActivity {
         Log.d(TAG,"onAccountChange");
         refreshLayout2.removeView(recyclerView);
         container.removeAllViews();
-
+        rvAdded = false;
         if(appNo == 2){
             container.addView(teamFilter);
             showIssues();
@@ -573,6 +591,7 @@ public class HomeActivity extends AppCompatActivity {
                             editor.putString(Constants.USER_ACCESS_TOKEN,authToken);
                             editor.putBoolean(Constants.IS_USER_LOGGED_IN, true);
                             editor.commit();
+                            updateAppNo(username);
                             syncIssues();
                             updateAccountHeader(username);
                         } catch (Exception e) {
@@ -582,6 +601,15 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 }
                 , null);
+    }
+
+    private void updateAppNo(String email){
+        User user = userService.findByEmail(email);
+        if (user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
+            appNo = 1;
+        }else {
+            appNo = 2;
+        }
     }
 
     private void invalidateAccessToken(){
@@ -614,7 +642,6 @@ public class HomeActivity extends AppCompatActivity {
                     syncIssues();
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Log.e(TAG,e.getMessage());
                 }
             }
         }).start();
@@ -635,7 +662,7 @@ public class HomeActivity extends AppCompatActivity {
             if(user == null){
                 syncUsers();
             }else {
-                chooseScreen(user.getUserType());
+                chooseScreen(user);
                 onAccountChange();
             }
         }
@@ -681,18 +708,22 @@ public class HomeActivity extends AppCompatActivity {
         if(user == null){
             syncUsers();
         }else {
-            chooseScreen(user.getUserType());
+            chooseScreen(user);
             onAccountChange();
         }
     }
 
-    private void chooseScreen(String userType){
-        Log.d(TAG,"chooseScreen: userType = " + userType);
-        if(userType.equalsIgnoreCase(Constants.USER_FACTORY)){
+    private void chooseScreen(User user){
+        Log.d(TAG,"chooseScreen: userType = " + user.getUserType() + ",level=" + user.getLevel());
+        if(user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
             appNo = 1;
-        }else if(userType.equalsIgnoreCase(Constants.USER_SAMPLING)){
+        }else if(user.getUserType().equalsIgnoreCase(Constants.USER_SAMPLING)){
             appNo = 2;
-            showFab(true);
+            if (user.getLevel().equalsIgnoreCase(Constants.USER_LEVEL4)){
+                showFab(false);
+            }else {
+                showFab(true);
+            }
         }else {
             appNo = 2;
             showFab(false);
@@ -757,7 +788,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 String email = userPref.getString(Constants.USER_EMAIL, null);
                 User user = userService.findByEmail(email);
-                chooseScreen(user.getUserType());
+                chooseScreen(user);
                 onAccountChange();
             }
         };

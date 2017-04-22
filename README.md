@@ -2,10 +2,6 @@
 ** Issue Detail Page 2 **
 
 Get UserType: SAMPLING|MERCHANDISING
-SAMPLING:
-    Get all Issue raised by this user
-    if fixAt == null  && issue.raisedBy == user.id :  Issue not fixed yet and is raised by this user only
-        add fixButton
 MERCHANDISING:
     if ackAt == null : problem is not acknowledged yet
         if(user.buyers.contains(issue.dField2)) : If user is concerned to this issue
@@ -15,7 +11,14 @@ MERCHANDISING:
             else : Only level 1 user can acknowledge
                 if user.level == LEVEL1
                     add ackButton
-
+    else if fixAt == null: problem is acknowledged but not fixed yet
+        if(user.buyers.contains(issue.dField2)) : If user is concerned to this issue
+            if processingAt > 1 : level2 should fix the issue
+                if user.level == LEVEL2
+                    add fixButton
+            else : level 1 should fix the issue
+                if user.level == LEVEL1
+                    add fixButton
 
 
 **Notification 2 Page**

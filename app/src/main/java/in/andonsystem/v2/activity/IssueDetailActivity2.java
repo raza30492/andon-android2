@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.authenticator.AuthConstants;
@@ -84,6 +85,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        AppClose.activity4 = this;
         mContext = this;
         app = (App)getApplication();
         mAccountManager = AccountManager.get(this);
@@ -154,11 +156,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
         desc.setText(issue.getDescription());
 
         /*////////// Adding ack or fix button ///////////////*/
-        if (user.getUserType().equalsIgnoreCase(Constants.USER_SAMPLING)){
-            if (issue.getFixAt() == null && issue.getRaisedBy() == user.getId()){
-                layout.addView(fixButton);
-            }
-        }else if (user.getUserType().equalsIgnoreCase(Constants.USER_MERCHANDISING)){
+        if (user.getUserType().equalsIgnoreCase(Constants.USER_MERCHANDISING)){
             if(issue.getAckAt() == null){
                 if(user.getBuyers().contains(issue.getBuyer())){
                     if( issue.getProcessingAt() > 1){
@@ -169,6 +167,19 @@ public class IssueDetailActivity2 extends AppCompatActivity {
                     else {
                         if(user.getLevel().contains(Constants.USER_LEVEL1)){
                             layout.addView(ackButton);
+                        }
+                    }
+                }
+            }else if (issue.getFixAt() == null){
+                if(user.getBuyers().contains(issue.getBuyer())){
+                    if( issue.getProcessingAt() > 1){
+                        if(user.getLevel().contains(Constants.USER_LEVEL2)){
+                            layout.addView(fixButton);
+                        }
+                    }
+                    else {
+                        if(user.getLevel().contains(Constants.USER_LEVEL1)){
+                            layout.addView(fixButton);
                         }
                     }
                 }

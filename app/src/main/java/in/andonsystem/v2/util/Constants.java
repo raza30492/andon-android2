@@ -32,7 +32,12 @@ public class Constants {
     public static final String USER_SAMPLING = "SAMPLING";
     public static final String USER_MERCHANDISING = "MERCHANDISING";
 
+    public static final String USER_LEVEL0 = "LEVEL0";
     public static final String USER_LEVEL1 = "LEVEL1";
     public static final String USER_LEVEL2 = "LEVEL2";
+    public static final String USER_LEVEL3 = "LEVEL3";
+    public static final String USER_LEVEL4 = "LEVEL4";
+
+
 
 }

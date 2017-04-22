@@ -34,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.authenticator.AuthConstants;
@@ -81,6 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        AppClose.activity4 = this;
         mContext = this;
         app = (App)getApplication();
         userService = new UserService(app);
@@ -237,7 +239,7 @@ public class ProfileActivity extends AppCompatActivity {
         else if (!newPass.trim().equals(confirmNewPass.trim())) {
             showMessage("Passwords do not match.");
         }else {
-            final String url = Constants.API_BASE_URL + "/misc/change_password?userId=" + user.getId() + "&oldPassword=" + currPass + "&newPassword=" + newPass;
+            final String url = Constants.API_BASE_URL + "/misc/change_password?email=" + user.getEmail() + "&oldPassword=" + currPass + "&newPassword=" + newPass;
             Log.i(TAG, "url = " + url);
             Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
                 @Override

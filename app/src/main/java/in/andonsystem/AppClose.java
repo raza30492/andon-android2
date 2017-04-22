@@ -9,7 +9,7 @@ import android.app.Activity;
 
 public class AppClose {
     public static Activity activity1;   //LoadingActivity
-    public static Activity activity2;   //AuthActivity
+    public static Activity activity2;   //AuthenticatorActivity
     public static Activity activity3;   //HomeActivity
     public static Activity activity4;   //Child Activity
 

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.CustomBuyerAdapter;
@@ -73,6 +74,8 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        AppClose.activity4 = this;
 
         mContext = this;
         app = (App) getApplication();
@@ -177,6 +180,13 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 Log.i(TAG,response.toString());
+                if (response.has("status")){
+                    try {
+                        showMessage(response.getString("message"));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
                 finish();
             }
         };

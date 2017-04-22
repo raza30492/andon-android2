@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.util.LoginUtil;
@@ -45,6 +46,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authenticator);
         Log.d(TAG,"onCreate()");
+        AppClose.activity2 = this;
 
         username = (EditText) findViewById(R.id.userId);
         password = (EditText) findViewById(R.id.password);
@@ -158,4 +160,9 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
         Toast.makeText(this,"Not implemented yet",Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        AppClose.close();
+    }
 }

@@ -39,9 +39,7 @@ public class IssueService {
 
     public List<Issue> findAll(){
         Log.d(TAG, "findAll" );
-        QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
-        queryBuilder.join(Buyer.class, BuyerDao.Properties.Id);
-        return queryBuilder.list();
+        return issueDao.loadAll();
     }
 
     public List<Issue> findAllByTeam(String team){
@@ -49,7 +47,6 @@ public class IssueService {
         QueryBuilder<Issue> queryBuilder = issueDao.queryBuilder();
         queryBuilder.join(IssueDao.Properties.BuyerId,Buyer.class)
                 .where(BuyerDao.Properties.Team.eq(team));
-        //queryBuilder.
         return   queryBuilder.list();
     }
 

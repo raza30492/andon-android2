@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.splunk.mint.Mint;
 
+import in.andonsystem.AppClose;
 import in.andonsystem.R;
 
 public class HelpActivity extends AppCompatActivity {
@@ -22,6 +23,7 @@ public class HelpActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        AppClose.activity4 = this;
     }
 
 }

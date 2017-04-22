@@ -9,7 +9,7 @@ public class Problem implements Comparable<Problem> {
     private String dField1; //Dynamic field1: app1=line, app2=team
     private String dField2; //Dynamic field2: app1=department, app2=Buyer
     private String probName;
-    private String critical;
+    private String critical; // app1 applicable
     private String raiseTime;
     private long downtime;
     private int flag;
@@ -22,6 +22,16 @@ public class Problem implements Comparable<Problem> {
         this.dField2 = dField2;
         this.probName = probName;
         this.downtime = downtime;
+    }
+
+    public Problem(long issueId, String dField1, String dField2, String probName, String raiseTime, long downtime, int flag) {
+        this.issueId = issueId;
+        this.dField1 = dField1;
+        this.dField2 = dField2;
+        this.probName = probName;
+        this.raiseTime = raiseTime;
+        this.downtime = downtime;
+        this.flag = flag;
     }
 
     public Problem(int issueId, String dField1, String dField2, String probName, String critical, String raiseTime, int downtime, int flag) {
@@ -67,7 +77,7 @@ public class Problem implements Comparable<Problem> {
         return flag;
     }
 
-    public void setIssueId(int issueId) {
+    public void setIssueId(long issueId) {
         this.issueId = issueId;
     }
 

@@ -17,14 +17,15 @@ import java.util.TreeSet;
 
 import in.andonsystem.R;
 import in.andonsystem.v2.activity.IssueDetailActivity2;
+import in.andonsystem.v2.dto.Problem;
 import in.andonsystem.v2.entity.Issue;
 
 public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
 
     private Context context;
-    private TreeSet<Issue> set;
+    private TreeSet<Problem> set;
 
-    public AdapterHome(Context context, TreeSet<Issue> set){
+    public AdapterHome(Context context, TreeSet<Problem> set){
         this.context = context;
         this.set = set;
     }
@@ -59,18 +60,20 @@ public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
     public void onBindViewHolder(HolderHome holder, int position) {
 
         Object[] array = set.toArray();
-        Issue issue = (Issue)array[position];
-        String problem = issue.getProblem();
+        Problem problem = (Problem)array[position];
+        String prob = problem.getProbName();
 
-        holder.icon.setLetter(issue.getProblem().charAt(0));
+        holder.icon.setLetter(prob.charAt(0));
         holder.icon.setOval(true);
-        holder.problem.setText(problem);
-        DateFormat df = new SimpleDateFormat("hh:mm aa");
-        df.setTimeZone(TimeZone.getTimeZone("GMT+05:30"));
-        holder.time.setText(df.format(issue.getRaisedAt()));
-        holder.team.setText(issue.getBuyer().getTeam());
-        holder.buyer.setText(issue.getBuyer().getName());
-        holder.issueId.setText(String.valueOf(issue.getId()));
+        holder.problem.setText(prob);
+        holder.time.setText(problem.getRaiseTime());
+        holder.team.setText(problem.getdField1());
+        String field2 = problem.getdField2();
+        if (problem.getDowntime() >= 0){
+            field2 = String.format("%s [ %03d min ]",field2,problem.getDowntime()/(1000*60));
+        }
+        holder.buyer.setText(field2);
+        holder.issueId.setText(String.valueOf(problem.getIssueId()));
     }
 
     @Override
@@ -81,30 +84,31 @@ public class AdapterHome extends RecyclerView.Adapter<HolderHome> {
     @Override
     public int getItemViewType(int position) {
         Object[] array = set.toArray();
-        Issue issue = (Issue)array[position];
-        if(issue.getFixAt() != null) return 2;
-        else if(issue.getAckAt() != null) return 1;
-        else return 0;
+        Problem problem = (Problem)array[position];
+        return problem.getFlag();
     }
 
-    public void insert(Issue issue){
-        set.add(issue);
+    public void insert(Problem problem){
+        set.add(problem);
         notifyDataSetChanged();
     }
 
     /**
      * Since Comparison is based on id, fixAt, ackAt and raisedAt fields, and the received object has changed state,
      * So, it is required to try deleting by moving it into previous states
-     * @param issue
+     * @param problem
      */
-    public void update(Issue issue){
-        Issue temp = new Issue();
-        temp.setId(issue.getId());
+    public void update(Problem problem){
+        Problem temp = new Problem();
+        temp.setIssueId(problem.getIssueId());
+        temp.setFlag(0);
         set.remove(temp);  //try removing if it was earlier in raised state
-        temp.setAckAt(issue.getAckAt());
+        temp.setFlag(1);
         set.remove(temp);  //try removing if it was earlier in acknowledged state
+        temp.setFlag(2);
+        set.remove(temp);  //try removing if it was earlier in fixed state
 
-        set.add(issue);
+        set.add(problem);
         notifyDataSetChanged();
     }
 }

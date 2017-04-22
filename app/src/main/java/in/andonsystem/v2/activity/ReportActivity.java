@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import in.andonsystem.App;
+import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterHome;
@@ -83,6 +84,7 @@ public class ReportActivity extends AppCompatActivity implements DatePickerDialo
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        AppClose.activity4 = this;
         mContext = this;
         app = (App) getApplication();
         userPref = getSharedPreferences(Constants.USER_PREF,0);
