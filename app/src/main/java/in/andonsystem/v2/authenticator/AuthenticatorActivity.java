@@ -29,6 +29,7 @@ import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.activity.ForgotPasswordActivity;
+import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.LoginUtil;
 
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
@@ -77,7 +78,7 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
             return;
         }
 
-        String url = "http://zahidraza.in/andon-system/oauth/token?grant_type=password&username=" + mAccountUsername + "&password=" + passwd;
+        String url = Constants.AUTH_BASE_URL + "?grant_type=password&username=" + mAccountUsername + "&password=" + passwd;
 
         final Bundle result = new Bundle();
 

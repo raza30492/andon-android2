@@ -40,13 +40,13 @@ public class LoginUtil {
 
     public static Bundle authenticate(String username, String password){
         Log.d(TAG,"authenticate()");
-        String url = "http://zahidraza.in/andon-system/oauth/token?grant_type=password&username=" + username + "&password=" + password;
+        String url = Constants.AUTH_BASE_URL + "?grant_type=password&username=" + username + "&password=" + password;
         return login(url);
     }
 
     public static Bundle authenticateWithRefreshToken(final String refreshToken){
         Log.d(TAG,"authenticateWithRefreshToken()");
-        String url = "http://zahidraza.in/andon-system/oauth/token?grant_type=refresh_token&refresh_token=" + refreshToken;
+        String url = Constants.AUTH_BASE_URL + "?grant_type=refresh_token&refresh_token=" + refreshToken;
         return login(url);
     }
 

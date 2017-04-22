@@ -4,10 +4,12 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
+import android.accounts.OnAccountsUpdateListener;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
@@ -16,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -55,8 +58,12 @@ import org.json.JSONObject;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
@@ -79,9 +86,10 @@ import in.andonsystem.v2.util.MyJsonRequest;
 public class HomeActivity extends AppCompatActivity {
 
     private final String TAG = HomeActivity.class.getSimpleName();
-    private final long ACCOUNT_ADD = 10L;
-    private final long ACCOUNT_MANAGE = 11L;
+    private final long ACCOUNT_ADD = 100L;
+    private final long ACCOUNT_MANAGE = 101L;
 
+    /*View Components*/
     private RelativeLayout container;
     private SwipeRefreshLayout refreshLayout2;
     private RecyclerView recyclerView;
@@ -95,7 +103,7 @@ public class HomeActivity extends AppCompatActivity {
     private String selectedTeam = "All Team";
     AdapterHome rvAdapter2;
 
-
+    /*App Variables*/
     private int appNo;
     private int accountSelected = -1;
     private Context mContext;
@@ -109,9 +117,74 @@ public class HomeActivity extends AppCompatActivity {
     private DateFormat df;
 
     private AccountManager mAccountManager;
-    private List<String> accountList = new ArrayList<>();
+    private Map<Integer,String> addedAccounts = new HashMap<>();  /*Accounts added in account header*/
     private AccountHeader accountHeader;
     private Drawer drawer;
+    private int accountId = 0;  /* identifier (incremented) for account added to account header*/
+    private boolean removedLoggedUser = false;  //Whether removed logged in user
+
+    private List<String> andonAccounts = new ArrayList<>();
+    private OnAccountsUpdateListener accountsUpdateListener = new OnAccountsUpdateListener() {
+        @Override
+        public void onAccountsUpdated(Account[] accounts) {
+            Log.d(TAG,"account Updated");
+            andonAccounts.clear();
+            //Filter andon accounts
+            for(Account account: accounts) {
+                if (account.type.equalsIgnoreCase(AuthConstants.VALUE_ACCOUNT_TYPE)) {
+                    andonAccounts.add(account.name);
+                }
+            }
+            //Check if account is Removed
+            String email = userPref.getString(Constants.USER_EMAIL,"");
+            StringBuilder removedIds = new StringBuilder(" ");
+            for (Map.Entry<Integer,String> entry: addedAccounts.entrySet()){
+                if (!andonAccounts.contains(entry.getValue())){
+                    Log.d(TAG,"removed account" + entry.getValue());
+                    if (email.equalsIgnoreCase(entry.getValue())){
+                        removedLoggedUser = true;
+                    }
+                    accountHeader.removeProfileByIdentifier(entry.getKey());
+                    removedIds.append(String.valueOf(entry.getKey()) + ",");
+                }
+            }
+            removedIds.setLength(removedIds.length()-1);
+            String[] ids = removedIds.toString().split(",");
+            for (String s: ids){
+                if (!TextUtils.isEmpty(s.trim())) {
+                    addedAccounts.remove(Integer.parseInt(s.trim()));
+                }
+            }
+            //Check if account is Added
+            Collection<String> aCollection = addedAccounts.values();
+            for (String account: andonAccounts){
+                if (! aCollection.contains(account)){
+                    Log.d(TAG,"added account" + account);
+                    accountHeader.addProfile(new ProfileDrawerItem().withEmail(account).withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(accountId),
+                            accountHeader.getProfiles().size() - 2);
+                    addedAccounts.put(accountId++,account);
+                    //When first account is added
+                    if (addedAccounts.size() == 1) {
+                        accountSelected = (accountId -1);
+                        processUserType(account);
+                    }
+                }
+            }
+
+            if (removedLoggedUser) {
+                if (addedAccounts.size() > 0){
+                    Map.Entry<Integer,String> firstEntry = addedAccounts.entrySet().iterator().next();
+                    accountSelected = firstEntry.getKey();
+                    processUserType(firstEntry.getValue());
+                }else {
+                    userPref.edit().putString(Constants.USER_ACCESS_TOKEN,null).commit();
+                    accountSelected = -1;
+                }
+            }
+
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,12 +192,15 @@ public class HomeActivity extends AppCompatActivity {
         Mint.setApplicationEnvironment(Mint.appEnvironmentStaging);
         Mint.initAndStartSession(getApplication(), "39a8187d");
         setContentView(R.layout.activity_home);
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         AppClose.activity3 = this;
+
         mContext = this;
         app = (App)getApplication();
         mAccountManager = AccountManager.get(this);
+        mAccountManager.addOnAccountsUpdatedListener(accountsUpdateListener, new Handler(),true);
         issueService = new IssueService(app);
         userService = new UserService(app);
         userBuyerService = new UserBuyerService(app);
@@ -162,28 +238,22 @@ public class HomeActivity extends AppCompatActivity {
             accountSelected = 0;
             for(Account a: accounts){
                 if(email.equals(a.name)){
-                    accountList.add(a.name);
+                    addedAccounts.put(accountId++,a.name);
                     break;
                 }
             }
             for(Account a: accounts){
                 if(!email.equals(a.name)){
-                    accountList.add(a.name);
+                    addedAccounts.put(accountId++,a.name);
                     break;
                 }
             }
-            for (int i = 0; i < accountList.size(); i++){
-                String account = accountList.get(i);
-                profile = new ProfileDrawerItem().withEmail(account)/*.withName(account)*/.withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(i);
+            for (Map.Entry<Integer,String> e: addedAccounts.entrySet()){
+                profile = new ProfileDrawerItem().withEmail(e.getValue()).withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(e.getKey());
                 accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
             }
 
             User user = userService.findByEmail(email);
-            if (user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
-                appNo = 1;
-            }else {
-                appNo = 2;
-            }
             chooseScreen(user);
             onAccountChange();
         }
@@ -230,6 +300,12 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mAccountManager.removeOnAccountsUpdatedListener(accountsUpdateListener);
     }
 
     private void showIssues() {
@@ -336,6 +412,9 @@ public class HomeActivity extends AppCompatActivity {
             if (accessToken == null) {
                 if(accountSelected != -1) {
                     getAuthToken();
+                }else if (removedLoggedUser) {
+                    removedLoggedUser = false;
+                    getTokenForAccountCreateIfNeeded();
                 }
                 return;
             }
@@ -484,8 +563,8 @@ public class HomeActivity extends AppCompatActivity {
                                 startActivity(i);
                             }else {
                                 int profileId = (int) ((IDrawerItem) profile).getIdentifier();
-                                if (profileId != accountSelected && profileId < 10) {
-                                    String user = accountList.get(profileId);
+                                if (profileId != accountSelected && profileId < 100) {
+                                    String user = addedAccounts.get(profileId);
                                     processUserType(user);
                                     accountSelected = profileId;
                                 }
@@ -505,9 +584,9 @@ public class HomeActivity extends AppCompatActivity {
                                 Intent i = new Intent(mContext, ProfileActivity.class);
                                 startActivity(i);
                             }
-                            else if( profileId != accountSelected && profileId < 10){
+                            else if( profileId != accountSelected && profileId < 100){
                                 //check usertype and thereby render appropriate home screen
-                                String user = accountList.get(profileId);
+                                String user = addedAccounts.get(profileId);
                                 processUserType(user);
                                 accountSelected = profileId;
                             }
@@ -566,7 +645,9 @@ public class HomeActivity extends AppCompatActivity {
                 .build();
     }
 
-    /*If acoount is changed re-render entire view*/
+    /**
+     * If acoount is changed re-render entire view
+     * */
     private void onAccountChange(){
         Log.d(TAG,"onAccountChange");
         refreshLayout2.removeView(recyclerView);
@@ -578,51 +659,6 @@ public class HomeActivity extends AppCompatActivity {
         }else {
             //Add app1 filters
         }
-    }
-
-    private void getTokenForAccountCreateIfNeeded() {
-        Log.d(TAG, "getTokenForAccountCreateIfNeeded");
-        AccountManager mAccountManager = AccountManager.get(this);
-        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(AuthConstants.VALUE_ACCOUNT_TYPE, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null,
-                new AccountManagerCallback<Bundle>() {
-                    @Override
-                    public void run(AccountManagerFuture<Bundle> future) {
-                        Bundle bnd = null;
-                        try {
-                            bnd = future.getResult();
-                            Log.d(TAG, "bundle: " + bnd);
-                            String username = bnd.getString(AccountManager.KEY_ACCOUNT_NAME);
-                            String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
-                            SharedPreferences.Editor editor = userPref.edit();
-                            editor.putString(Constants.USER_EMAIL,username);
-                            editor.putString(Constants.USER_ACCESS_TOKEN,authToken);
-                            editor.putBoolean(Constants.IS_USER_LOGGED_IN, true);
-                            editor.commit();
-                            updateAppNo(username);
-                            syncIssues();
-                            updateAccountHeader(username);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            //showMessage(e.getMessage());
-                        }
-                    }
-                }
-                , null);
-    }
-
-    private void updateAppNo(String email){
-        User user = userService.findByEmail(email);
-        if (user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
-            appNo = 1;
-        }else {
-            appNo = 2;
-        }
-    }
-
-    private void invalidateAccessToken(){
-        Log.d(TAG,"invalidateAccessToken");
-        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
-        mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,accessToken);
     }
 
     private void getAuthToken(){
@@ -654,30 +690,6 @@ public class HomeActivity extends AppCompatActivity {
         }).start();
     }
 
-    private void updateAccountHeader(String name){
-        Log.d(TAG,"updateAccountHeader: email = " + name);
-        for (String account: accountList ){
-            if(name.equalsIgnoreCase(account)){
-                return;
-            }
-        }
-        //First user being added
-        if(accountList.size() == 0){
-            accountSelected = 0;
-            User user = userService.findByEmail(name);
-            //User added while after app started, so unable to find in local db. sync db
-            if(user == null){
-                syncUsers();
-            }else {
-                chooseScreen(user);
-                onAccountChange();
-            }
-        }
-        ProfileDrawerItem profile =  new ProfileDrawerItem().withEmail(name)/*.withName(name)*/.withIcon(getResources().getDrawable(R.drawable.profile3)).withIdentifier(accountList.size());
-        accountHeader.addProfile(profile, accountHeader.getProfiles().size() - 2);
-        accountList.add(name);
-    }
-
     private void addAccount(){
         Log.i(TAG, "addAccount");
         final AccountManagerFuture<Bundle> future = mAccountManager.addAccount(AuthConstants.VALUE_ACCOUNT_TYPE, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, null, this, new AccountManagerCallback<Bundle>() {
@@ -685,8 +697,8 @@ public class HomeActivity extends AppCompatActivity {
             public void run(AccountManagerFuture<Bundle> future) {
                 try {
                     Bundle bnd = future.getResult();
-                    String username = bnd.getString(AccountManager.KEY_ACCOUNT_NAME);
-                    updateAccountHeader(username);
+                    //String username = bnd.getString(AccountManager.KEY_ACCOUNT_NAME);
+                    //updateAccountHeader(username);
                 } catch (Exception e) {
                     e.printStackTrace();
                     //showMessage(e.getMessage());
@@ -720,6 +732,10 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Decide which app to display (Factory or City) and also decide if fab is to displayed
+     * @param user
+     */
     private void chooseScreen(User user){
         Log.d(TAG,"chooseScreen: userType = " + user.getUserType() + ",level=" + user.getLevel());
         if(user.getUserType().equalsIgnoreCase(Constants.USER_FACTORY)){
@@ -809,5 +825,42 @@ public class HomeActivity extends AppCompatActivity {
         request4.setTag(TAG);
         AppController.getInstance().addToRequestQueue(request4);
     }
+
+    private void getTokenForAccountCreateIfNeeded() {
+        Log.d(TAG, "getTokenForAccountCreateIfNeeded");
+        AccountManager mAccountManager = AccountManager.get(this);
+        final AccountManagerFuture<Bundle> future = mAccountManager.getAuthTokenByFeatures(AuthConstants.VALUE_ACCOUNT_TYPE, AuthConstants.AUTH_TOKEN_TYPE_FULL_ACCESS, null, this, null, null,
+                new AccountManagerCallback<Bundle>() {
+                    @Override
+                    public void run(AccountManagerFuture<Bundle> future) {
+                        Bundle bnd = null;
+                        try {
+                            bnd = future.getResult();
+                            Log.d(TAG, "bundle: " + bnd);
+                            String username = bnd.getString(AccountManager.KEY_ACCOUNT_NAME);
+                            String authToken = bnd.getString(AccountManager.KEY_AUTHTOKEN);
+                            SharedPreferences.Editor editor = userPref.edit();
+                            editor.putString(Constants.USER_EMAIL,username);
+                            editor.putString(Constants.USER_ACCESS_TOKEN,authToken);
+                            editor.putBoolean(Constants.IS_USER_LOGGED_IN, true);
+                            editor.commit();
+                            //updateAppNo(username);
+//                            updateAccountHeader(username);
+                            onStart();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            //showMessage(e.getMessage());
+                        }
+                    }
+                }
+                , null);
+    }
+
+    private void invalidateAccessToken(){
+        Log.d(TAG,"invalidateAccessToken");
+        String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
+        mAccountManager.invalidateAuthToken(AuthConstants.VALUE_ACCOUNT_TYPE,accessToken);
+    }
+
 
 }

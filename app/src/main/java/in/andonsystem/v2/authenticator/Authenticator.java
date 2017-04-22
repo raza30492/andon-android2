@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import in.andonsystem.AppController;
+import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.LoginUtil;
 
 import static android.accounts.AccountManager.KEY_BOOLEAN_RESULT;
@@ -150,7 +151,7 @@ public class Authenticator extends AbstractAccountAuthenticator {
 
     private String login(AccountManager am,Account account,final String username,final String password){
         Log.i(TAG,"login");
-        String url = "http://zahidraza.in/andon-system/oauth/token?grant_type=password&username=zahid7292@gmail.com&password=8987525008";
+        String url = Constants.AUTH_BASE_URL + "?grant_type=password&username=zahid7292@gmail.com&password=8987525008";
 
         RequestFuture<JSONObject> future = RequestFuture.newFuture();
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST,url,null,future,future){

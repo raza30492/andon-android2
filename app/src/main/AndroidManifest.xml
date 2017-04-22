@@ -18,7 +18,9 @@
         android:theme="@style/AppTheme">
         <activity android:name=".v2.authenticator.AuthenticatorActivity" />
 
-        <service android:name=".v2.authenticator.AuthenticatorService">
+        <service
+            android:name=".v2.authenticator.AuthenticatorService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
