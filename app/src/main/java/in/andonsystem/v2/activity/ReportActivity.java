@@ -8,8 +8,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -35,25 +33,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TreeSet;
 
 import in.andonsystem.App;
 import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
-import in.andonsystem.v2.adapter.AdapterHome;
 import in.andonsystem.v2.adapter.AdapterReport;
 import in.andonsystem.v2.authenticator.AuthConstants;
 import in.andonsystem.v2.dto.Problem;
 import in.andonsystem.v2.entity.Buyer;
-import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.service.BuyerService;
 import in.andonsystem.v2.util.Constants;
 import in.andonsystem.v2.util.MyJsonRequest;
@@ -143,7 +137,7 @@ public class ReportActivity extends AppCompatActivity implements DatePickerDialo
             e.printStackTrace();
         }
 
-        String url = Constants.API_BASE_URL + "/issues?start=" + start + "&end="+ end ;
+        String url = Constants.API2_BASE_URL + "/issues?start=" + start + "&end="+ end ;
         Log.i(TAG, "url = " + url);
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override

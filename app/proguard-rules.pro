@@ -15,3 +15,6 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+#-libraryjars libs/greendao-3.2.0.jar
+-libraryjars libs/greendao-api-3.2.0.jar
+

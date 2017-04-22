@@ -3,8 +3,6 @@ package in.andonsystem.v2.activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,11 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -31,15 +25,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import in.andonsystem.App;
 import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterContact;
-import in.andonsystem.v2.adapter.AdapterHome;
-import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.entity.UserBuyer;
 import in.andonsystem.v2.service.UserBuyerService;
@@ -151,7 +142,7 @@ public class ContactActivity extends AppCompatActivity {
     private void syncUsers(){
         Log.d(TAG,"syncUsers()");
         final Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
-        String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
+        String url4 = Constants.API2_BASE_URL + "/users?after=" + lastSync;
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

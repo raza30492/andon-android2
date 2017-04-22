@@ -22,6 +22,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
@@ -34,7 +35,6 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
@@ -265,7 +265,7 @@ public class HomeActivity extends AppCompatActivity {
 
         if(appNo == 2) {
             refreshLayout2.setRefreshing(true);
-            String url = Constants.API_BASE_URL + "/issues?start=" + syncPref.getLong(Constants.LAST_ISSUE2_SYNC, 0);
+            String url = Constants.API2_BASE_URL + "/issues?start=" + syncPref.getLong(Constants.LAST_ISSUE2_SYNC, 0);
             Log.i(TAG, "url = " + url);
             Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
                 @Override
@@ -533,9 +533,18 @@ public class HomeActivity extends AppCompatActivity {
                 .withDisplayBelowStatusBar(true)
                 .withAccountHeader(accountHeader)
                 .addDrawerItems(
-                        new PrimaryDrawerItem().withName("Report").withIcon(getResources().getDrawable(R.drawable.ic_show_chart_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
-                        new PrimaryDrawerItem().withName("Contacts").withIcon(getResources().getDrawable(R.drawable.ic_contact_phone_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1),
-                        new PrimaryDrawerItem().withName("Help").withIcon(getResources().getDrawable(R.drawable.ic_help_outline_white_36dp)).withSelectedColor(getResources().getColor(R.color.slide_header)).withIdentifier(1)
+                        new PrimaryDrawerItem().withName("Report")
+                                .withIcon(getResources().getDrawable(R.drawable.ic_show_chart_white_36dp))
+                                .withSelectedColor(getResources().getColor(R.color.slide_background))
+                                .withTextColor(getResources().getColor(R.color.white))
+                                .withSelectedTextColor(getResources().getColor(R.color.white))
+                                .withIdentifier(1),
+                        new PrimaryDrawerItem().withName("Contacts")
+                                .withIcon(getResources().getDrawable(R.drawable.ic_contact_phone_white_36dp))
+                                .withSelectedColor(getResources().getColor(R.color.slide_background))
+                                .withTextColor(getResources().getColor(R.color.white))
+                                .withSelectedTextColor(getResources().getColor(R.color.white))
+                                .withIdentifier(2)
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -548,8 +557,6 @@ public class HomeActivity extends AppCompatActivity {
                                 i = new Intent(mContext, ReportActivity.class);
                             }else if (selected.equals("Contacts")) {
                                 i = new Intent(mContext, ContactActivity.class);
-                            }else if (selected.equals("Help")) {
-                                i = new Intent(mContext, HelpActivity.class);
                             }
                             startActivity(i);
                         }
@@ -743,7 +750,7 @@ public class HomeActivity extends AppCompatActivity {
     private void syncUsers(){
         Log.d(TAG,"syncUsers()");
         final Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
-        String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
+        String url4 = Constants.API2_BASE_URL + "/users?after=" + lastSync;
         Response.Listener<JSONObject> listener4 = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

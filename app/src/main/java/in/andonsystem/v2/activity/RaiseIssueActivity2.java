@@ -208,7 +208,7 @@ public class RaiseIssueActivity2 extends AppCompatActivity {
                 }
             }
         };
-        String url = Constants.API_BASE_URL + "/issues";
+        String url = Constants.API2_BASE_URL + "/issues";
         Log.d(TAG, "Issue Raise url:" + url);
         String accessToken = userPref.getString(Constants.USER_ACCESS_TOKEN,null);
         if(accessToken == null){

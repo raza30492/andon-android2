@@ -5,7 +5,7 @@ package in.andonsystem.v2.util;
  */
 
 public class Constants {
-    public static final String API_BASE_URL = "http://zahidraza.in/andon-system/api/v2";
+    public static final String API2_BASE_URL = "http://zahidraza.in/andon-system/api/v2";
 
     /*Sync Preference file*/
     public static final String SYNC_PREF = "SYNC_PREF";

@@ -28,6 +28,7 @@ import java.util.Map;
 import in.andonsystem.AppClose;
 import in.andonsystem.AppController;
 import in.andonsystem.R;
+import in.andonsystem.v2.activity.ForgotPasswordActivity;
 import in.andonsystem.v2.util.LoginUtil;
 
 public class AuthenticatorActivity extends AccountAuthenticatorActivity {
@@ -157,7 +158,8 @@ public class AuthenticatorActivity extends AccountAuthenticatorActivity {
     }
 
     public void forgotPassword(View view){
-        Toast.makeText(this,"Not implemented yet",Toast.LENGTH_SHORT).show();
+        Intent i = new Intent(this, ForgotPasswordActivity.class);
+        startActivity(i);
     }
 
     @Override

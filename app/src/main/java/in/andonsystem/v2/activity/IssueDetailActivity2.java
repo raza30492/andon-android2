@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -22,7 +21,6 @@ import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.splunk.mint.Mint;
 
 import org.json.JSONException;
@@ -197,7 +195,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
     private void acknowledge(){
         Log.d(TAG,"acknowldege");
 
-        String url = Constants.API_BASE_URL + "/issues/" + issueId + "?operation=OP_ACK";
+        String url = Constants.API2_BASE_URL + "/issues/" + issueId + "?operation=OP_ACK";
         Log.i(TAG, "config url: " + url);
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
@@ -243,7 +241,7 @@ public class IssueDetailActivity2 extends AppCompatActivity {
     private void fix(){
         Log.d(TAG,"fix");
 
-        String url = Constants.API_BASE_URL + "/issues/" + issueId + "?operation=OP_FIX";
+        String url = Constants.API2_BASE_URL + "/issues/" + issueId + "?operation=OP_FIX";
         Log.i(TAG, "config url: " + url);
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override

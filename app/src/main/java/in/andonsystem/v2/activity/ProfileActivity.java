@@ -174,7 +174,7 @@ public class ProfileActivity extends AppCompatActivity {
             showMessage("Incorrect mobile number");
             return;
         }
-        final String url = Constants.API_BASE_URL + "/users/" + user.getId();
+        final String url = Constants.API2_BASE_URL + "/users/" + user.getId();
         Log.i(TAG, "url = " + url);
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
@@ -239,7 +239,7 @@ public class ProfileActivity extends AppCompatActivity {
         else if (!newPass.trim().equals(confirmNewPass.trim())) {
             showMessage("Passwords do not match.");
         }else {
-            final String url = Constants.API_BASE_URL + "/misc/change_password?email=" + user.getEmail() + "&oldPassword=" + currPass + "&newPassword=" + newPass;
+            final String url = Constants.API2_BASE_URL + "/misc/change_password?email=" + user.getEmail() + "&oldPassword=" + currPass + "&newPassword=" + newPass;
             Log.i(TAG, "url = " + url);
             Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
                 @Override

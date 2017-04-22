@@ -18,8 +18,8 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="copyright">&#169; Md Zahid Raza</string>
-    <string name="version1">ver 1.2.6</string>
-    <string name="version2">1-2-6</string>
+    <string name="version1">ver 1.2.7</string>
+    <string name="version2">1-2-7</string>
 
     <string name="login_btn_text">LOG IN</string>
     <string name="forgot_passwd_btn_text">Forgot Password?</string>
@@ -52,6 +52,7 @@
     <string name="title_activity_issue_detail2">Issue Detail</string>
     <string name="title_activity_test">TestActivity</string>
     <string name="title_activity_home1">Andon System</string>
+    <string name="title_activity_forgot_password">Forgot Password</string>
 
 
 </resources>

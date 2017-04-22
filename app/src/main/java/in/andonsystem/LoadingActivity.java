@@ -28,7 +28,6 @@ import java.util.List;
 
 import in.andonsystem.v2.activity.HomeActivity;
 import in.andonsystem.v2.entity.Buyer;
-import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.entity.UserBuyer;
 import in.andonsystem.v2.service.BuyerService;
@@ -97,7 +96,7 @@ public class LoadingActivity extends AppCompatActivity {
                 //Delete older issue
                 new IssueService(app).deleteAllOlder();
 
-                String url = Constants.API_BASE_URL + "/misc/config?version=" + getString(R.string.version2);
+                String url = Constants.API2_BASE_URL + "/misc/config?version=" + getString(R.string.version2);
                 Log.i(TAG, "config url: " + url);
                 Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
                     @Override
@@ -174,7 +173,7 @@ public class LoadingActivity extends AppCompatActivity {
                 .commit();
 
         /////////////////////////// get Buyers ////////////////////////
-        String url1 = Constants.API_BASE_URL + "/buyers";
+        String url1 = Constants.API2_BASE_URL + "/buyers";
         Response.Listener<JSONArray> listener1 = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -206,7 +205,7 @@ public class LoadingActivity extends AppCompatActivity {
         appController.addToRequestQueue(request1);
 
         /////////////////////////////// get problems ////////////////////////////
-        String url2 = Constants.API_BASE_URL + "/problems";
+        String url2 = Constants.API2_BASE_URL + "/problems";
         Response.Listener<JSONArray> listener2 = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -242,7 +241,7 @@ public class LoadingActivity extends AppCompatActivity {
         appController.addToRequestQueue(request2);
 
         //get Teams
-        String url3 = Constants.API_BASE_URL + "/teams";
+        String url3 = Constants.API2_BASE_URL + "/teams";
         Response.Listener<JSONArray> listener3 = new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -342,7 +341,7 @@ public class LoadingActivity extends AppCompatActivity {
     private void syncUsers(){
         Log.d(TAG,"syncUsers()");
         final Long lastSync = syncPref.getLong(Constants.LAST_USER_SYNC,0L);
-        String url4 = Constants.API_BASE_URL + "/users?after=" + lastSync;
+        String url4 = Constants.API2_BASE_URL + "/users?after=" + lastSync;
         Response.Listener<JSONObject> listener4 = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

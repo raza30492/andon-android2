@@ -11,7 +11,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -25,8 +24,6 @@ import com.splunk.mint.Mint;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -36,7 +33,6 @@ import in.andonsystem.AppController;
 import in.andonsystem.R;
 import in.andonsystem.v2.adapter.AdapterNotification;
 import in.andonsystem.v2.dto.Notification;
-import in.andonsystem.v2.entity.Buyer;
 import in.andonsystem.v2.entity.Issue;
 import in.andonsystem.v2.entity.User;
 import in.andonsystem.v2.service.IssueService;
@@ -184,7 +180,7 @@ public class NotificationActivity2 extends AppCompatActivity {
     }
 
     private void getCurrentTime(){
-        String url = Constants.API_BASE_URL + "/misc/current_time";
+        String url = Constants.API2_BASE_URL + "/misc/current_time";
         Response.Listener<JSONObject> listener = new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {

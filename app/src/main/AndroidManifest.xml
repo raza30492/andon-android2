@@ -101,10 +101,6 @@
                 android:value="in.andonsystem.v2.activity.HomeActivity" />
         </activity>
         <activity
-            android:name=".v2.activity.TestActivity"
-            android:label="@string/title_activity_test"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".v2.activity.HomeActivity"
             android:label="@string/title_activity_home1"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -116,6 +112,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="in.andonsystem.v2.activity.HomeActivity" />
+        </activity>
+        <activity
+            android:name=".v2.activity.ForgotPasswordActivity"
+            android:label="@string/title_activity_forgot_password"
+            android:parentActivityName=".v2.authenticator.AuthenticatorActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="in.andonsystem.v2.authenticator.AuthenticatorActivity" />
         </activity>
     </application>
 
